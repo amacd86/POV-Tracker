@@ -28,26 +28,31 @@ class POV(db.Model):
     __tablename__ = 'povs'
 
     id = db.Column(db.Integer, primary_key=True)
-    customer_name = db.Column(db.String(100), nullable=False)
+    deal_name = db.Column(db.String(200), nullable=False)  # Renamed from customer_name
     assigned_se = db.Column(db.String(100), nullable=False)
     assigned_ae = db.Column(db.String(100), nullable=False)
     start_date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
     projected_end_date = db.Column(db.Date, nullable=False)
+    actual_completion_date = db.Column(db.Date, nullable=True)  # New field
     current_stage = db.Column(db.String(50), nullable=False)
     roadblocks = db.Column(db.Text)
     overcome_roadblocks = db.Column(db.Boolean, default=False)
-    status = db.Column(db.String(20), default='Active')
-    price = db.Column(db.Float, nullable=True)  # Price field for the POV
+    status = db.Column(db.String(20), default='In Trial')
+    deal_amount = db.Column(db.Float, nullable=True)  # Renamed from price
+    success_criteria = db.Column(db.Text)  # New field
+    technical_win = db.Column(db.String(10), default='Pending')  # New field
+    roadblock_resolution = db.Column(db.Text)  # New field
+    win_loss_reason = db.Column(db.Text)  # New field
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
-    deleted = db.Column(db.Boolean, default=False)  # For soft delete
-    deleted_at = db.Column(db.DateTime)  # For soft delete timestamp
+    deleted = db.Column(db.Boolean, default=False)
+    deleted_at = db.Column(db.DateTime)
 
     # Relationship
     notes = db.relationship('Note', backref='pov', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
-        return f"POV('{self.customer_name}', '{self.current_stage}', '{self.status}')"
+        return f"POV('{self.deal_name}', '{self.current_stage}', '{self.status}')"
 
 class Note(db.Model):
     __tablename__ = 'notes'
@@ -73,21 +78,28 @@ def inject_now():
 
 # Forms
 class POVForm(FlaskForm):
-    customer_name = StringField('Customer Name', validators=[DataRequired(), Length(min=2, max=100)])
+    deal_name = StringField('Deal Name', validators=[DataRequired(), Length(min=2, max=200)])  # Renamed
     assigned_se = SelectField('Assigned SE', validators=[DataRequired()],
-                              choices=[('John Doe', 'John Doe'), ('Jane Smith', 'Jane Smith'), ('Bob Johnson', 'Bob Johnson')])
+                              choices=[('Angus MacDonald', 'Angus MacDonald'), ('John Doe', 'John Doe'), ('Jane Smith', 'Jane Smith')])
     assigned_ae = SelectField('Assigned AE', validators=[DataRequired()],
-                              choices=[('Alex Brown', 'Alex Brown'), ('Sarah Lee', 'Sarah Lee'), ('Mike Wilson', 'Mike Wilson')])
+                              choices=[('Rob Lynch', 'Rob Lynch'), ('Andrew Gross', 'Andrew Gross'), ('Melissa Pearson', 'Melissa Pearson'),
+                                       ('Cory Duplease', 'Cory Duplease'), ('Tom Devoe', 'Tom Devoe'), ('Tim Lake', 'Tim Lake')])
     start_date = DateField('Start Date', validators=[DataRequired()], format='%Y-%m-%d')
     projected_end_date = DateField('Projected End Date', validators=[DataRequired()], format='%Y-%m-%d')
+    actual_completion_date = DateField('Actual Completion Date', validators=[Optional()], format='%Y-%m-%d')  # New field
     current_stage = SelectField('Current Stage', validators=[DataRequired()],
                                 choices=[('Deployment', 'Deployment'), ('Training 1', 'Training 1'),
-                                         ('Training 2', 'Training 2'), ('Wrap-Up', 'Wrap-Up'), ('Tech Call', 'Tech Call')])
+                                         ('Training 2', 'Training 2'), ('POV Wrap-Up', 'POV Wrap-Up'), ('Completed', 'Completed')])
     roadblocks = TextAreaField('Roadblocks')
     overcome_roadblocks = BooleanField('Roadblocks Overcome')
     status = SelectField('Status', validators=[DataRequired()],
-                         choices=[('Active', 'Active'), ('On Hold', 'On Hold'), ('Closed - Won', 'Closed - Won'), ('Closed - Lost', 'Closed - Lost')])
-    price = FloatField('Price ($)', validators=[Optional()])
+                         choices=[('In Trial', 'In Trial'), ('Pending Sales', 'Pending Sales'),
+                                  ('Closed Won', 'Closed Won'), ('Closed Lost', 'Closed Lost'), ('On Hold', 'On Hold')])
+    deal_amount = FloatField('Deal Amount ($)', validators=[Optional()])  # Renamed
+    success_criteria = TextAreaField('Success Criteria')  # New field
+    technical_win = SelectField('Technical Win', choices=[('Pending', 'Pending'), ('Yes', 'Yes'), ('No', 'No')], default='Pending')  # New field
+    roadblock_resolution = TextAreaField('Roadblock Resolution')  # New field
+    win_loss_reason = TextAreaField('Win/Loss Reason')  # New field
     initial_notes = TextAreaField('Initial Notes')
     submit = SubmitField('Submit')
 
@@ -214,16 +226,21 @@ def new_pov():
     if form.validate_on_submit():
         try:
             pov = POV(
-                customer_name=form.customer_name.data,
+                deal_name=form.deal_name.data,
                 assigned_se=form.assigned_se.data,
                 assigned_ae=form.assigned_ae.data,
                 start_date=form.start_date.data,
                 projected_end_date=form.projected_end_date.data,
+                actual_completion_date=form.actual_completion_date.data,
                 current_stage=form.current_stage.data,
                 roadblocks=form.roadblocks.data,
                 overcome_roadblocks=form.overcome_roadblocks.data,
                 status=form.status.data,
-                price=form.price.data,
+                deal_amount=form.deal_amount.data,
+                success_criteria=form.success_criteria.data,
+                technical_win=form.technical_win.data,
+                roadblock_resolution=form.roadblock_resolution.data,
+                win_loss_reason=form.win_loss_reason.data,
                 deleted=False
             )
             db.session.add(pov)
@@ -253,20 +270,24 @@ def edit_pov(id):
         form = POVForm(obj=pov)
 
         if request.method == 'GET':
-            # For edit, don't set initial_notes as it would create duplicate notes
             form.initial_notes.data = ''
 
         if form.validate_on_submit():
-            pov.customer_name = form.customer_name.data
+            pov.deal_name = form.deal_name.data
             pov.assigned_se = form.assigned_se.data
             pov.assigned_ae = form.assigned_ae.data
             pov.start_date = form.start_date.data
             pov.projected_end_date = form.projected_end_date.data
+            pov.actual_completion_date = form.actual_completion_date.data
             pov.current_stage = form.current_stage.data
             pov.roadblocks = form.roadblocks.data
             pov.overcome_roadblocks = form.overcome_roadblocks.data
             pov.status = form.status.data
-            pov.price = form.price.data
+            pov.deal_amount = form.deal_amount.data
+            pov.success_criteria = form.success_criteria.data
+            pov.technical_win = form.technical_win.data
+            pov.roadblock_resolution = form.roadblock_resolution.data
+            pov.win_loss_reason = form.win_loss_reason.data
 
             db.session.commit()
 
@@ -404,13 +425,13 @@ def export_csv():
 
         # Write header row
         writer.writerow([
-            'Customer', 'SE', 'AE', 'Stage', 'Start Date', 'End Date',
-            'Status', 'Price ($)', 'Roadblocks', 'Roadblocks Overcome', 'Notes'
+            'Deal Name', 'SE', 'AE', 'Stage', 'Start Date', 'Projected End Date', 'Actual Completion Date',
+            'Status', 'Deal Amount ($)', 'Success Criteria', 'Technical Win', 'Roadblocks', 'Roadblock Resolution',
+            'Roadblocks Overcome', 'Win/Loss Reason', 'Notes'
         ])
 
         # Write data rows
         for pov in povs:
-            # Get notes for this POV
             try:
                 notes = Note.query.filter_by(pov_id=pov.id).order_by(Note.timestamp.desc()).all()
                 notes_text = "; ".join([f"{note.timestamp.strftime('%m/%d/%Y')}: {note.content}" for note in notes])
@@ -418,16 +439,21 @@ def export_csv():
                 notes_text = ""
 
             writer.writerow([
-                pov.customer_name,
+                pov.deal_name,
                 pov.assigned_se,
                 pov.assigned_ae,
                 pov.current_stage,
-                pov.start_date.strftime('%m/%d/%Y'),
-                pov.projected_end_date.strftime('%m/%d/%Y'),
+                pov.start_date.strftime('%m/%d/%Y') if pov.start_date else '',
+                pov.projected_end_date.strftime('%m/%d/%Y') if pov.projected_end_date else '',
+                pov.actual_completion_date.strftime('%m/%d/%Y') if pov.actual_completion_date else '',
                 pov.status,
-                f"${pov.price:.2f}" if pov.price else "-",
+                f"${pov.deal_amount:.2f}" if pov.deal_amount else "-",
+                pov.success_criteria or '',
+                pov.technical_win or '',
                 pov.roadblocks or '',
+                pov.roadblock_resolution or '',
                 'Yes' if pov.overcome_roadblocks else 'No',
+                pov.win_loss_reason or '',
                 notes_text
             ])
 
@@ -437,7 +463,6 @@ def export_csv():
         output_bytes.write(output.getvalue().encode('utf-8-sig'))
         output_bytes.seek(0)
 
-        # Create response
         return send_file(
             output_bytes,
             as_attachment=True,
@@ -570,7 +595,7 @@ def analytics():
             durations = [(pov.projected_end_date - pov.start_date).days for pov in active_povs]
             avg_duration = sum(durations) / len(durations) if durations else 0
             
-            total_value = db.session.query(func.sum(POV.price)).filter_by(
+            total_value = db.session.query(func.sum(POV.deal_amount)).filter_by(
                 deleted=False,
                 status='Active'
             ).scalar() or 0
