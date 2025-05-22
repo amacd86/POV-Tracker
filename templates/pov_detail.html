@@ -2,203 +2,146 @@
 
 {% block title %}POV Details{% endblock %}
 
-{% block page_title %}POV Details: {{ pov.customer_name }}{% endblock %}
+{% block page_title %}POV Details{% endblock %}
 
 {% block content %}
-<div class="row">
-    <!-- POV Details Column -->
-    <div class="col-lg-8">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">POV Information</h5>
-                <div>
-                    <a href="{{ url_for('edit_pov', id=pov.id) }}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-edit me-1"></i>Edit
-                    </a>
-                </div>
+<div class="card shadow-sm">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0">{{ pov.customer_name }}</h5>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <h6 class="text-muted">Customer</h6>
-                        <p class="mb-0">{{ pov.customer_name }}</p>
+            <div class="col-auto">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+                <a href="{{ url_for('edit_pov', id=pov.id) }}" class="btn btn-sm btn-secondary ms-1">
+                    <i class="fas fa-edit me-1"></i>Edit POV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="row">
+            <!-- POV Details -->
+            <div class="col-md-7">
+                <h6 class="border-bottom pb-2 mb-3">POV Details</h6>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="mb-1"><strong>Customer:</strong> {{ pov.customer_name }}</p>
+                        <p class="mb-1"><strong>Assigned SE:</strong> {{ pov.assigned_se }}</p>
+                        <p class="mb-1"><strong>Assigned AE:</strong> {{ pov.assigned_ae }}</p>
+                        <p class="mb-1"><strong>Start Date:</strong> {{ pov.start_date.strftime('%m/%d/%Y') }}</p>
+                        <p class="mb-1"><strong>Projected End Date:</strong> {{ pov.projected_end_date.strftime('%m/%d/%Y') }}</p>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <h6 class="text-muted">Status</h6>
-                        <span class="badge 
-                            {% if pov.status == 'Active' %}bg-success
-                            {% elif pov.status == 'On Hold' %}bg-warning
-                            {% elif pov.status == 'Closed - Won' %}bg-primary
-                            {% elif pov.status == 'Closed - Lost' %}bg-danger
-                            {% endif %} fs-6">
-                            {{ pov.status }}
-                        </span>
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <h6 class="text-muted">Sales Engineer</h6>
-                        <p class="mb-0">{{ pov.assigned_se }}</p>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <h6 class="text-muted">Account Executive</h6>
-                        <p class="mb-0">{{ pov.assigned_ae }}</p>
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <h6 class="text-muted">Start Date</h6>
-                        <p class="mb-0">{{ pov.start_date.strftime('%B %d, %Y') }}</p>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <h6 class="text-muted">Projected End Date</h6>
-                        <p class="mb-0">{{ pov.projected_end_date.strftime('%B %d, %Y') }}</p>
-                    </div>
-                </div>
-                
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <h6 class="text-muted">Current Stage</h6>
-                        <span class="badge 
-                            {% if pov.current_stage == 'Deployment' %}bg-info
-                            {% elif pov.current_stage == 'Training 1' %}bg-primary
-                            {% elif pov.current_stage == 'Training 2' %}bg-warning
-                            {% elif pov.current_stage == 'Wrap-Up' %}bg-success
-                            {% elif pov.current_stage == 'Tech Call' %}bg-secondary
-                            {% endif %} fs-6">
-                            {{ pov.current_stage }}
-                        </span>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <h6 class="text-muted">Roadblocks Overcome</h6>
-                        <p class="mb-0">
-                            {% if pov.overcome_roadblocks %}
-                                <i class="fas fa-check-circle text-success me-1"></i> Yes
+                    <div class="col-md-6">
+                        <p class="mb-1">
+                            <strong>Status:</strong>
+                            <span class="badge
+                                {% if pov.status == 'Active' %}bg-success
+                                {% elif pov.status == 'On Hold' %}bg-warning
+                                {% elif pov.status == 'Closed - Won' %}bg-primary
+                                {% elif pov.status == 'Closed - Lost' %}bg-danger
+                                {% endif %}">
+                                {{ pov.status }}
+                            </span>
+                        </p>
+                        <p class="mb-1">
+                            <strong>Current Stage:</strong>
+                            <span class="badge
+                                {% if pov.current_stage == 'Deployment' %}bg-info
+                                {% elif pov.current_stage == 'Training 1' %}bg-primary
+                                {% elif pov.current_stage == 'Training 2' %}bg-warning
+                                {% elif pov.current_stage == 'Wrap-Up' %}bg-success
+                                {% elif pov.current_stage == 'Tech Call' %}bg-secondary
+                                {% endif %}">
+                                {{ pov.current_stage }}
+                            </span>
+                        </p>
+                        <p class="mb-1">
+                            <strong>Roadblocks:</strong>
+                            {% if pov.roadblocks %}
+                                {% if pov.overcome_roadblocks %}
+                                    <span class="badge bg-success">Overcome</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Present</span>
+                                {% endif %}
                             {% else %}
-                                <i class="fas fa-times-circle text-danger me-1"></i> No
+                                <span class="badge bg-secondary">None</span>
                             {% endif %}
                         </p>
+                        <p class="mb-1"><strong>Created:</strong> {{ pov.created_at.strftime('%m/%d/%Y %H:%M') }}</p>
+                        <p class="mb-1"><strong>Updated:</strong> {{ pov.updated_at.strftime('%m/%d/%Y %H:%M') }}</p>
+                        <p class="mb-1"><strong>Price:</strong> {% if pov.price %}${{ "%.2f"|format(pov.price) }}{% else %}-{% endif %}</p>
                     </div>
                 </div>
-                
+
                 {% if pov.roadblocks %}
-                <div class="row mt-2">
-                    <div class="col-12">
-                        <h6 class="text-muted">Roadblocks</h6>
-                        <div class="p-3 bg-light rounded">
-                            {{ pov.roadblocks|nl2br }}
+                    <h6 class="border-bottom pb-2 mb-3">Roadblocks</h6>
+                    <div class="card bg-light mb-3">
+                        <div class="card-body py-2">
+                            <p class="mb-0">{{ pov.roadblocks|nl2br|safe }}</p>
                         </div>
                     </div>
-                </div>
                 {% endif %}
-                
-                <!-- Stage Progression -->
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <h6 class="text-muted mb-3">Update Stage</h6>
-                        <div class="d-flex flex-wrap justify-content-between">
-                            <a href="{{ url_for('update_stage', id=pov.id, stage='Deployment') }}" 
-                               class="btn btn-sm mb-2 {% if pov.current_stage == 'Deployment' %}btn-info{% else %}btn-outline-info{% endif %}">
-                                Deployment
-                            </a>
-                            <a href="{{ url_for('update_stage', id=pov.id, stage='Training 1') }}" 
-                               class="btn btn-sm mb-2 {% if pov.current_stage == 'Training 1' %}btn-primary{% else %}btn-outline-primary{% endif %}">
-                                Training 1
-                            </a>
-                            <a href="{{ url_for('update_stage', id=pov.id, stage='Training 2') }}" 
-                               class="btn btn-sm mb-2 {% if pov.current_stage == 'Training 2' %}btn-warning{% else %}btn-outline-warning{% endif %}">
-                                Training 2
-                            </a>
-                            <a href="{{ url_for('update_stage', id=pov.id, stage='Wrap-Up') }}" 
-                               class="btn btn-sm mb-2 {% if pov.current_stage == 'Wrap-Up' %}btn-success{% else %}btn-outline-success{% endif %}">
-                                Wrap-Up
-                            </a>
-                            <a href="{{ url_for('update_stage', id=pov.id, stage='Tech Call') }}" 
-                               class="btn btn-sm mb-2 {% if pov.current_stage == 'Tech Call' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">
-                                Tech Call
-                            </a>
-                        </div>
-                    </div>
+
+                <h6 class="border-bottom pb-2 mb-3">Update Stage</h6>
+                <div class="btn-group mb-3">
+                    <a href="{{ url_for('update_stage', id=pov.id, stage='Deployment') }}" class="btn btn-sm {% if pov.current_stage == 'Deployment' %}btn-info{% else %}btn-outline-info{% endif %}">Deployment</a>
+                    <a href="{{ url_for('update_stage', id=pov.id, stage='Training 1') }}" class="btn btn-sm {% if pov.current_stage == 'Training 1' %}btn-primary{% else %}btn-outline-primary{% endif %}">Training 1</a>
+                    <a href="{{ url_for('update_stage', id=pov.id, stage='Training 2') }}" class="btn btn-sm {% if pov.current_stage == 'Training 2' %}btn-warning{% else %}btn-outline-warning{% endif %}">Training 2</a>
+                    <a href="{{ url_for('update_stage', id=pov.id, stage='Wrap-Up') }}" class="btn btn-sm {% if pov.current_stage == 'Wrap-Up' %}btn-success{% else %}btn-outline-success{% endif %}">Wrap-Up</a>
+                    <a href="{{ url_for('update_stage', id=pov.id, stage='Tech Call') }}" class="btn btn-sm {% if pov.current_stage == 'Tech Call' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Tech Call</a>
                 </div>
-                
-                <!-- Mark Complete Buttons -->
-                {% if pov.status == 'Active' or pov.status == 'On Hold' %}
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <h6 class="text-muted mb-3">Mark Complete</h6>
-                        <div class="d-flex">
-                            <a href="{{ url_for('mark_complete', id=pov.id, status='Closed - Won') }}" 
-                               class="btn btn-outline-success me-2">
-                                <i class="fas fa-check-circle me-1"></i>Mark Won
-                            </a>
-                            <a href="{{ url_for('mark_complete', id=pov.id, status='Closed - Lost') }}" 
-                               class="btn btn-outline-danger">
-                                <i class="fas fa-times-circle me-1"></i>Mark Lost
-                            </a>
-                        </div>
+
+                {% if pov.status == 'Active' %}
+                    <h6 class="border-bottom pb-2 mb-3">Mark Complete</h6>
+                    <div class="btn-group mb-3">
+                        <a href="{{ url_for('mark_complete', id=pov.id, status='Closed - Won') }}" class="btn btn-sm btn-outline-primary">Mark as Won</a>
+                        <a href="{{ url_for('mark_complete', id=pov.id, status='Closed - Lost') }}" class="btn btn-sm btn-outline-danger">Mark as Lost</a>
                     </div>
-                </div>
                 {% endif %}
             </div>
-        </div>
-    </div>
-    
-    <!-- Notes Column -->
-    <div class="col-lg-4">
-        <div class="card shadow-sm mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Add Note</h5>
-            </div>
-            <div class="card-body">
-                <form method="POST" action="{{ url_for('add_note', id=pov.id) }}">
-                    {{ note_form.hidden_tag() }}
-                    <div class="form-group mb-3">
-                        {{ note_form.content(class="form-control", rows=3, placeholder="Add a note about this POV...") }}
+
+            <!-- Notes Section -->
+            <div class="col-md-5">
+                <h6 class="border-bottom pb-2 mb-3">POV Notes</h6>
+                
+                <!-- Add Note Form -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <form method="post" action="{{ url_for('add_note', id=pov.id) }}">
+                            {{ note_form.csrf_token }}
+                            <div class="mb-3">
+                                {{ note_form.content(class="form-control", rows=3, placeholder="Add a new note...") }}
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Note</button>
+                        </form>
                     </div>
-                    {{ note_form.submit(class="btn btn-primary w-100") }}
-                </form>
-            </div>
-        </div>
-        
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h5 class="mb-0">Notes History</h5>
-            </div>
-            <div class="card-body">
+                </div>
+
+                <!-- Notes List -->
                 {% if notes %}
-                <div class="timeline">
-                    {% for note in notes %}
-                    <div class="timeline-item mb-3 pb-3 border-bottom">
-                        <small class="text-muted d-block mb-1">
-                            {{ note.timestamp.strftime('%B %d, %Y at %I:%M %p') }}
-                        </small>
-                        <p class="mb-0">{{ note.content|nl2br }}</p>
+                    <div class="notes-timeline">
+                        {% for note in notes %}
+                            <div class="card mb-3">
+                                <div class="card-header bg-light py-1">
+                                    <small class="text-muted">{{ note.timestamp.strftime('%m/%d/%Y %H:%M') }}</small>
+                                </div>
+                                <div class="card-body py-2">
+                                    <p class="card-text mb-0">{{ note.content|nl2br|safe }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
-                </div>
                 {% else %}
-                <div class="text-center py-3">
-                    <i class="fas fa-clipboard text-muted mb-2" style="font-size: 2rem;"></i>
-                    <p class="mb-0">No notes yet.</p>
-                </div>
+                    <div class="alert alert-info">
+                        No notes added yet. Add the first note above.
+                    </div>
                 {% endif %}
             </div>
         </div>
     </div>
 </div>
-
-<!-- Navigation Buttons -->
-<div class="mt-4">
-    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
-    </a>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-    // Add any view-specific JavaScript here
-</script>
 {% endblock %}

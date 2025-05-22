@@ -1,0 +1,96 @@
+{% extends "layout.html" %}
+
+{% block title %}Trash{% endblock %}
+
+{% block page_title %}Deleted POVs{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0">Deleted POVs</h5>
+            </div>
+            <div class="col-auto">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+                {% if povs %}
+                <form method="post" action="{{ url_for('empty_trash') }}" class="d-inline" 
+                      onsubmit="return confirm('Are you sure you want to permanently delete all items in trash? This cannot be undone.');">
+                    <button type="submit" class="btn btn-sm btn-danger ms-1">
+                        <i class="fas fa-trash-alt me-1"></i>Empty Trash
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-body">
+        {% if povs %}
+        <div class="table-responsive">
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th>Customer</th>
+                        <th>SE</th>
+                        <th>AE</th>
+                        <th>Stage</th>
+                        <th>Status</th>
+                        <th>Deleted At</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pov in povs %}
+                    <tr>
+                        <td>{{ pov.customer_name }}</td>
+                        <td>{{ pov.assigned_se }}</td>
+                        <td>{{ pov.assigned_ae }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if pov.current_stage == 'Deployment' %}bg-info
+                                {% elif pov.current_stage == 'Training 1' %}bg-primary
+                                {% elif pov.current_stage == 'Training 2' %}bg-warning
+                                {% elif pov.current_stage == 'Wrap-Up' %}bg-success
+                                {% elif pov.current_stage == 'Tech Call' %}bg-secondary
+                                {% endif %}">
+                                {{ pov.current_stage }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if pov.status == 'Active' %}bg-success
+                                {% elif pov.status == 'On Hold' %}bg-warning
+                                {% elif pov.status == 'Closed - Won' %}bg-primary
+                                {% elif pov.status == 'Closed - Lost' %}bg-danger
+                                {% endif %}">
+                                {{ pov.status }}
+                            </span>
+                        </td>
+                        <td>{{ pov.deleted_at.strftime('%m/%d/%Y %H:%M') }}</td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('restore_pov', id=pov.id) }}" class="btn btn-outline-success" data-bs-toggle="tooltip" title="Restore">
+                                    <i class="fas fa-trash-restore"></i>
+                                </a>
+                                <a href="{{ url_for('permanent_delete_pov', id=pov.id) }}" class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Delete Permanently" 
+                                   onclick="return confirm('Are you sure you want to permanently delete this POV? This cannot be undone.')">
+                                    <i class="fas fa-times"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            The trash is empty.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

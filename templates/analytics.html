@@ -1,0 +1,281 @@
+{% extends "layout.html" %}
+
+{% block title %}Analytics{% endblock %}
+
+{% block page_title %}POV Analytics{% endblock %}
+
+{% block head %}
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-3">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">POV Dashboard Analytics</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Overview of your Proof of Value (POV) projects and performance metrics.
+                    <a href="{{ url_for('dashboard') }}" class="float-end btn btn-sm btn-outline-primary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Overview Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm bg-primary text-white">
+            <div class="card-body">
+                <h6 class="card-title">Ending Soon</h6>
+                <h2 class="mb-0">{{ ending_soon }}</h2>
+                <p class="card-text small">POVs ending in next 2 weeks</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm bg-danger text-white">
+            <div class="card-body">
+                <h6 class="card-title">Overdue</h6>
+                <h2 class="mb-0">{{ overdue }}</h2>
+                <p class="card-text small">POVs past end date</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm bg-info text-white">
+            <div class="card-body">
+                <h6 class="card-title">Avg. Duration</h6>
+                <h2 class="mb-0">{{ avg_duration }}</h2>
+                <p class="card-text small">Days per active POV</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm bg-success text-white">
+            <div class="card-body">
+                <h6 class="card-title">Total Value</h6>
+                <h2 class="mb-0">${{ "%.2f"|format(total_value) }}</h2>
+                <p class="card-text small">Active POVs</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h6 class="mb-0">POVs by Status</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h6 class="mb-0">Active POVs by Stage</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="stageChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h6 class="mb-0">POVs by SE</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="seChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h6 class="mb-0">Won vs Lost (Last 90 Days)</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="outcomeChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h6 class="mb-0">Monthly POV Starts (Last 6 Months)</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="monthlyChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Status Chart
+        const statusCtx = document.getElementById('statusChart').getContext('2d');
+        const statusChart = new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ status_labels|tojson }},
+                datasets: [{
+                    data: {{ status_data|tojson }},
+                    backgroundColor: [
+                        '#28a745', // Active - green
+                        '#ffc107', // On Hold - yellow
+                        '#0275d8', // Won - blue
+                        '#dc3545'  // Lost - red
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+
+        // Stage Chart
+        const stageCtx = document.getElementById('stageChart').getContext('2d');
+        const stageChart = new Chart(stageCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ stage_labels|tojson }},
+                datasets: [{
+                    label: 'POVs',
+                    data: {{ stage_data|tojson }},
+                    backgroundColor: '#17a2b8',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // SE Chart
+        const seCtx = document.getElementById('seChart').getContext('2d');
+        const seChart = new Chart(seCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ se_labels|tojson }},
+                datasets: [{
+                    data: {{ se_data|tojson }},
+                    backgroundColor: [
+                        '#6f42c1', // purple
+                        '#20c997', // teal
+                        '#fd7e14', // orange
+                        '#e83e8c', // pink
+                        '#6c757d'  // gray
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
+                }
+            }
+        });
+
+        // Outcome Chart (Won vs Lost)
+        const outcomeCtx = document.getElementById('outcomeChart').getContext('2d');
+        const outcomeChart = new Chart(outcomeCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Won', 'Lost'],
+                datasets: [{
+                    label: 'POVs',
+                    data: [{{ won_count }}, {{ lost_count }}],
+                    backgroundColor: ['#0275d8', '#dc3545'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Monthly Chart
+        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        const monthlyChart = new Chart(monthlyCtx, {
+            type: 'line',
+            data: {
+                labels: {{ months|tojson }},
+                datasets: [{
+                    label: 'POVs Started',
+                    data: {{ month_data|tojson }},
+                    fill: false,
+                    borderColor: '#6f42c1',
+                    tension: 0.1,
+                    pointBackgroundColor: '#6f42c1'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

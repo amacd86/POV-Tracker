@@ -7,179 +7,254 @@
 {% block content %}
 <div class="card shadow-sm">
     <div class="card-header">
-        <h5 class="mb-0">POV Information</h5>
-    </div>
-    <div class="card-body">
-        <form method="POST" action="">
-            {{ form.hidden_tag() }}
-            
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        {{ form.customer_name.label(class="form-label") }}
-                        {% if form.customer_name.errors %}
-                            {{ form.customer_name(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.customer_name.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            {{ form.customer_name(class="form-control") }}
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        {{ form.status.label(class="form-label") }}
-                        {% if form.status.errors %}
-                            {{ form.status(class="form-select is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.status.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            {{ form.status(class="form-select") }}
-                        {% endif %}
-                    </div>
-                </div>
+        <div class="row align-items-center">
+            <div class="col">
+                <h5 class="mb-0">{{ title }}</h5>
             </div>
-            
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        {{ form.assigned_se.label(class="form-label") }}
-                        {% if form.assigned_se.errors %}
-                            {{ form.assigned_se(class="form-select is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.assigned_se.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            {{ form.assigned_se(class="form-select") }}
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        {{ form.assigned_ae.label(class="form-label") }}
-                        {% if form.assigned_ae.errors %}
-                            {{ form.assigned_ae(class="form-select is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.assigned_ae.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            {{ form.assigned_ae(class="form-select") }}
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        {{ form.start_date.label(class="form-label") }}
-                        {% if form.start_date.errors %}
-                            {{ form.start_date(class="form-control is-invalid", type="date") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.start_date.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            {{ form.start_date(class="form-control", type="date") }}
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        {{ form.projected_end_date.label(class="form-label") }}
-                        {% if form.projected_end_date.errors %}
-                            {{ form.projected_end_date(class="form-control is-invalid", type="date") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.projected_end_date.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            {{ form.projected_end_date(class="form-control", type="date") }}
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        {{ form.current_stage.label(class="form-label") }}
-                        {% if form.current_stage.errors %}
-                            {{ form.current_stage(class="form-select is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.current_stage.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            {{ form.current_stage(class="form-select") }}
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="form-check form-switch mt-4">
-                        {{ form.overcome_roadblocks(class="form-check-input") }}
-                        {{ form.overcome_roadblocks.label(class="form-check-label") }}
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-group mb-3">
-                {{ form.roadblocks.label(class="form-label") }}
-                {% if form.roadblocks.errors %}
-                    {{ form.roadblocks(class="form-control is-invalid", rows=4) }}
-                    <div class="invalid-feedback">
-                        {% for error in form.roadblocks.errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.roadblocks(class="form-control", rows=4) }}
-                {% endif %}
-                <div class="form-text text-muted">Describe any challenges or roadblocks encountered during the POV.</div>
-            </div>
-            
-            <!-- Initial Notes section - added INSIDE the form and before the buttons -->
-            <div class="form-group mb-3">
-                {{ form.initial_notes.label(class="form-label") }}
-                {% if form.initial_notes.errors %}
-                    {{ form.initial_notes(class="form-control is-invalid", rows=4) }}
-                    <div class="invalid-feedback">
-                        {% for error in form.initial_notes.errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    {{ form.initial_notes(class="form-control", rows=4) }}
-                {% endif %}
-                <div class="form-text text-muted">Add initial notes about this POV. Additional notes can be added later from the detail view.</div>
-            </div>
-            
-            <div class="d-flex justify-content-between">
-                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">
+            <div class="col-auto">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-primary">
                     <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
                 </a>
-                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="post" action="">
+            {{ form.csrf_token }}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="customer_name" class="form-label">Customer Name</label>
+                    {{ form.customer_name(class="form-control") }}
+                    {% if form.customer_name.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.customer_name.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="assigned_se" class="form-label">Assigned SE</label>
+                    {{ form.assigned_se(class="form-select") }}
+                    {% if form.assigned_se.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.assigned_se.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="assigned_ae" class="form-label">Assigned AE</label>
+                    {{ form.assigned_ae(class="form-select") }}
+                    {% if form.assigned_ae.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.assigned_ae.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="start_date" class="form-label">Start Date</label>
+                    {{ form.start_date(class="form-control") }}
+                    {% if form.start_date.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.start_date.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="projected_end_date" class="form-label">Projected End Date</label>
+                    {{ form.projected_end_date(class="form-control") }}
+                    {% if form.projected_end_date.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.projected_end_date.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="current_stage" class="form-label">Current Stage</label>
+                    {{ form.current_stage(class="form-select") }}
+                    {% if form.current_stage.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.current_stage.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="status" class="form-label">Status</label>
+                    {{ form.status(class="form-select") }}
+                    {% if form.status.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.status.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="price" class="form-label">Price ($)</label>
+                    <input type="number" step="0.01" min="0" class="form-control" id="price" name="price" 
+                          value="{{ form.price.data or '' }}">
+                    <div class="form-text">Enter the POV price (optional)</div>
+                    {% if form.price.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.price.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-md-9 mb-3">
+                    <label for="roadblocks" class="form-label">Roadblocks</label>
+                    {{ form.roadblocks(class="form-control", rows=3) }}
+                    <div class="form-text">Describe any current roadblocks or challenges.</div>
+                    {% if form.roadblocks.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.roadblocks.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <div class="form-check">
+                        {{ form.overcome_roadblocks(class="form-check-input") }}
+                        <label class="form-check-label" for="overcome_roadblocks">
+                            Roadblocks Overcome
+                        </label>
+                        <div class="form-text">Check this box if all roadblocks have been resolved.</div>
+                        {% if form.overcome_roadblocks.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.overcome_roadblocks.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label for="initial_notes" class="form-label">
+                        {% if title == 'New POV' %}Initial Notes{% else %}Add New Note{% endif %}
+                    </label>
+                    {{ form.initial_notes(class="form-control", rows=5) }}
+                    <div class="form-text">
+                        {% if title == 'New POV' %}
+                            Add any relevant notes about this POV (optional).
+                        {% else %}
+                            Add a new note to this POV's history (optional).
+                        {% endif %}
+                    </div>
+                    {% if form.initial_notes.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.initial_notes.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    {% if title == 'New POV' %}
+                        <i class="fas fa-plus me-1"></i>Create POV
+                    {% else %}
+                        <i class="fas fa-save me-1"></i>Update POV
+                    {% endif %}
+                </button>
             </div>
         </form>
     </div>
 </div>
+
+{% if title == 'Edit POV' %}
+<div class="card shadow-sm mt-3">
+    <div class="card-header">
+        <h6 class="mb-0">Quick Actions</h6>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <strong>Tip:</strong> You can also update the stage and status from the POV detail view after saving.
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Add any form-specific JavaScript here
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-calculate projected end date based on start date (optional feature)
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('projected_end_date');
+        
+        startDateInput.addEventListener('change', function() {
+            if (this.value && !endDateInput.value) {
+                const startDate = new Date(this.value);
+                const endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 30); // Default 30 days
+                
+                const year = endDate.getFullYear();
+                const month = String(endDate.getMonth() + 1).padStart(2, '0');
+                const day = String(endDate.getDate()).padStart(2, '0');
+                
+                endDateInput.value = `${year}-${month}-${day}`;
+            }
+        });
+
+        // Format price input
+        const priceInput = document.getElementById('price');
+        priceInput.addEventListener('blur', function() {
+            if (this.value && !isNaN(this.value)) {
+                this.value = parseFloat(this.value).toFixed(2);
+            }
+        });
+
+        // Character counter for roadblocks and notes (optional)
+        const roadblocksTextarea = document.querySelector('textarea[name="roadblocks"]');
+        const notesTextarea = document.querySelector('textarea[name="initial_notes"]');
+        
+        function addCharacterCounter(textarea, maxLength = 1000) {
+            if (!textarea) return;
+            
+            const counter = document.createElement('div');
+            counter.className = 'form-text text-end';
+            counter.style.fontSize = '0.875rem';
+            
+            function updateCounter() {
+                const remaining = maxLength - textarea.value.length;
+                counter.textContent = `${textarea.value.length}/${maxLength} characters`;
+                counter.style.color = remaining < 50 ? '#dc3545' : '#6c757d';
+            }
+            
+            textarea.addEventListener('input', updateCounter);
+            textarea.parentNode.appendChild(counter);
+            updateCounter();
+        }
+        
+        addCharacterCounter(roadblocksTextarea, 500);
+        addCharacterCounter(notesTextarea, 1000);
+    });
 </script>
 {% endblock %}

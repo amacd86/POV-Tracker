@@ -18,10 +18,13 @@
                 <a href="{{ url_for('export_csv') }}" class="btn btn-sm btn-secondary ms-1">
                     <i class="fas fa-file-export me-1"></i>Export to CSV
                 </a>
+                <a href="{{ url_for('analytics') }}" class="btn btn-sm btn-info ms-1">
+                    <i class="fas fa-chart-bar me-1"></i>Analytics
+                </a>
             </div>
         </div>
     </div>
-    
+
     <div class="card-body">
         <!-- Filters -->
         <div class="row mb-3">
@@ -29,8 +32,8 @@
                 <div class="card bg-light">
                     <div class="card-body py-2">
                         <form method="get" action="{{ url_for('dashboard') }}">
-                            <div class="row g-2">
-                                <div class="col-md-3">
+                            <div class="row g-2 mb-2">
+                                <div class="col-md-4">
                                     <select name="se" class="form-select form-select-sm">
                                         <option value="">All SEs</option>
                                         {% for se in all_ses %}
@@ -38,7 +41,7 @@
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <select name="ae" class="form-select form-select-sm">
                                         <option value="">All AEs</option>
                                         {% for ae in all_aes %}
@@ -46,7 +49,7 @@
                                         {% endfor %}
                                     </select>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-4">
                                     <select name="status" class="form-select form-select-sm">
                                         <option value="">All Statuses</option>
                                         {% for status_val, status_text in all_statuses %}
@@ -54,8 +57,29 @@
                                         {% endfor %}
                                     </select>
                                 </div>
+                            </div>
+                            <div class="row g-2 mb-2">
                                 <div class="col-md-3">
-                                    <button type="submit" class="btn btn-sm btn-primary w-100">Apply Filters</button>
+                                    <label class="form-label form-label-sm">Start Date From</label>
+                                    <input type="date" name="start_date_from" class="form-control form-control-sm" value="{{ start_date_from }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label form-label-sm">Start Date To</label>
+                                    <input type="date" name="start_date_to" class="form-control form-control-sm" value="{{ start_date_to }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label form-label-sm">End Date From</label>
+                                    <input type="date" name="end_date_from" class="form-control form-control-sm" value="{{ end_date_from }}">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label form-label-sm">End Date To</label>
+                                    <input type="date" name="end_date_to" class="form-control form-control-sm" value="{{ end_date_to }}">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 text-end">
+                                    <button type="reset" class="btn btn-sm btn-outline-secondary">Reset Filters</button>
+                                    <button type="submit" class="btn btn-sm btn-primary">Apply Filters</button>
                                 </div>
                             </div>
                         </form>
@@ -63,118 +87,216 @@
                 </div>
             </div>
         </div>
-        
-        <!-- POVs Table -->
-        {% if povs %}
-        <div class="table-responsive">
-            <table class="table table-hover table-striped">
-                <thead>
-                    <tr>
-                        <th>Customer</th>
-                        <th>SE</th>
-                        <th>AE</th>
-                        <th>Stage</th>
-                        <th>Start</th>
-                        <th>End</th>
-                        <th>Status</th>
-                        <th>RB Resolved</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for pov in povs %}
-                    <tr>
-                        <td>{{ pov.customer_name }}</td>
-                        <td>{{ pov.assigned_se }}</td>
-                        <td>{{ pov.assigned_ae }}</td>
-                        <td>
-                            <span class="badge 
-                                {% if pov.current_stage == 'Deployment' %}bg-info
-                                {% elif pov.current_stage == 'Training 1' %}bg-primary
-                                {% elif pov.current_stage == 'Training 2' %}bg-warning
-                                {% elif pov.current_stage == 'Wrap-Up' %}bg-success
-                                {% elif pov.current_stage == 'Tech Call' %}bg-secondary
-                                {% endif %}">
-                                {{ pov.current_stage }}
-                            </span>
-                        </td>
-                        <td>{{ pov.start_date.strftime('%m/%d/%Y') }}</td>
-                        <td>{{ pov.projected_end_date.strftime('%m/%d/%Y') }}</td>
-                        <td>
-                            <span class="badge 
-                                {% if pov.status == 'Active' %}bg-success
-                                {% elif pov.status == 'On Hold' %}bg-warning
-                                {% elif pov.status == 'Closed - Won' %}bg-primary
-                                {% elif pov.status == 'Closed - Lost' %}bg-danger
-                                {% endif %}">
-                                {{ pov.status }}
-                            </span>
-                        </td>
-                        <td class="text-center">
-                            {% if pov.roadblocks %}
-                                {% if pov.overcome_roadblocks %}
-                                    <i class="fas fa-check-circle text-success" data-bs-toggle="tooltip" title="Roadblocks Overcome"></i>
+
+        <!-- Bulk Actions -->
+        <form method="post" action="{{ url_for('bulk_action') }}" id="pov-form">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="select-all">Select All</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="deselect-all">Deselect All</button>
+                    </div>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="input-group input-group-sm">
+                        <select name="bulk_action" class="form-select" id="bulk-action">
+                            <option value="">-- Bulk Action --</option>
+                            <option value="delete">Delete</option>
+                            <option value="mark_active">Mark as Active</option>
+                            <option value="mark_on_hold">Mark as On Hold</option>
+                            <option value="mark_won">Mark as Won</option>
+                            <option value="mark_lost">Mark as Lost</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary" id="apply-bulk-action" disabled>Apply</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- POVs Table -->
+            {% if povs %}
+            <div class="table-responsive">
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="select-all-checkbox"></th>
+                            <th>Customer</th>
+                            <th>SE</th>
+                            <th>AE</th>
+                            <th>Stage</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Status</th>
+                            <th>Price ($)</th>
+                            <th>RB Resolved</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pov in povs %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="selected_povs" value="{{ pov.id }}" class="pov-checkbox">
+                            </td>
+                            <td>{{ pov.customer_name }}</td>
+                            <td>{{ pov.assigned_se }}</td>
+                            <td>{{ pov.assigned_ae }}</td>
+                            <td>
+                                <span class="badge
+                                    {% if pov.current_stage == 'Deployment' %}bg-info
+                                    {% elif pov.current_stage == 'Training 1' %}bg-primary
+                                    {% elif pov.current_stage == 'Training 2' %}bg-warning
+                                    {% elif pov.current_stage == 'Wrap-Up' %}bg-success
+                                    {% elif pov.current_stage == 'Tech Call' %}bg-secondary
+                                    {% endif %}">
+                                    {{ pov.current_stage }}
+                                </span>
+                            </td>
+                            <td>{{ pov.start_date.strftime('%m/%d/%Y') }}</td>
+                            <td>{{ pov.projected_end_date.strftime('%m/%d/%Y') }}</td>
+                            <td>
+                                <span class="badge
+                                    {% if pov.status == 'Active' %}bg-success
+                                    {% elif pov.status == 'On Hold' %}bg-warning
+                                    {% elif pov.status == 'Closed - Won' %}bg-primary
+                                    {% elif pov.status == 'Closed - Lost' %}bg-danger
+                                    {% endif %}">
+                                    {{ pov.status }}
+                                </span>
+                            </td>
+                            <td>{% if pov.price %}${{ "%.2f"|format(pov.price) }}{% else %}-{% endif %}</td>
+                            <td class="text-center">
+                                {% if pov.roadblocks %}
+                                    {% if pov.overcome_roadblocks %}
+                                        <i class="fas fa-check-circle text-success" data-bs-toggle="tooltip" title="Roadblocks Overcome"></i>
+                                    {% else %}
+                                        <i class="fas fa-exclamation-triangle text-warning" data-bs-toggle="tooltip" title="Roadblocks Present"></i>
+                                    {% endif %}
                                 {% else %}
-                                    <i class="fas fa-exclamation-triangle text-warning" data-bs-toggle="tooltip" title="Roadblocks Present"></i>
+                                    <i class="fas fa-minus text-muted" data-bs-toggle="tooltip" title="No Roadblocks"></i>
                                 {% endif %}
-                            {% else %}
-                                <i class="fas fa-minus text-muted" data-bs-toggle="tooltip" title="No Roadblocks"></i>
-                            {% endif %}
-                        </td>
-                        <td class="text-center">
-                            <div class="btn-group btn-group-sm">
-                                <a href="{{ url_for('view_pov', id=pov.id) }}" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="View Details">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="{{ url_for('edit_pov', id=pov.id) }}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Edit POV">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                {% if pov.status == 'Active' %}
+                            </td>
+                            <td class="text-center">
                                 <div class="btn-group btn-group-sm">
-                                    <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li><a class="dropdown-item" href="{{ url_for('mark_complete', id=pov.id, status='Closed - Won') }}">Mark Won</a></li>
-                                        <li><a class="dropdown-item" href="{{ url_for('mark_complete', id=pov.id, status='Closed - Lost') }}">Mark Lost</a></li>
-                                    </ul>
+                                    <a href="{{ url_for('view_pov', id=pov.id) }}" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('edit_pov', id=pov.id) }}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Edit POV">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('delete_pov', id=pov.id) }}" class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Delete POV"
+                                       onclick="return confirm('Are you sure you want to move this POV to trash?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    {% if pov.status == 'Active' %}
+                                    <div class="btn-group btn-group-sm">
+                                        <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="{{ url_for('mark_complete', id=pov.id, status='Closed - Won') }}">Mark Won</a></li>
+                                            <li><a class="dropdown-item" href="{{ url_for('mark_complete', id=pov.id, status='Closed - Lost') }}">Mark Lost</a></li>
+                                        </ul>
+                                    </div>
+                                    {% endif %}
                                 </div>
-                                {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="alert alert-info">
-            No POVs found. <a href="{{ url_for('new_pov') }}">Create a new POV</a> to get started.
-        </div>
-        {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                No POVs found. <a href="{{ url_for('new_pov') }}">Create a new POV</a> to get started.
+            </div>
+            {% endif %}
+        </form>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-    // Add any dashboard-specific JavaScript here
-    
-    // Example: highlight past-due POVs
+    // Handling bulk actions
     document.addEventListener('DOMContentLoaded', function() {
+        // Select/deselect functionality
+        const selectAllBtn = document.getElementById('select-all');
+        const deselectAllBtn = document.getElementById('deselect-all');
+        const selectAllCheckbox = document.getElementById('select-all-checkbox');
+        const checkboxes = document.querySelectorAll('.pov-checkbox');
+        const bulkActionSelect = document.getElementById('bulk-action');
+        const applyBulkActionBtn = document.getElementById('apply-bulk-action');
+
+        // Toggle apply button based on selections
+        function updateApplyButton() {
+            const checkedCount = document.querySelectorAll('.pov-checkbox:checked').length;
+            const actionSelected = bulkActionSelect.value !== '';
+
+            applyBulkActionBtn.disabled = checkedCount === 0 || !actionSelected;
+        }
+
+        // Select all checkboxes
+        selectAllBtn.addEventListener('click', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            selectAllCheckbox.checked = true;
+            updateApplyButton();
+        });
+
+        // Deselect all checkboxes
+        deselectAllBtn.addEventListener('click', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            selectAllCheckbox.checked = false;
+            updateApplyButton();
+        });
+
+        // Header checkbox functionality
+        selectAllCheckbox.addEventListener('change', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateApplyButton();
+        });
+
+        // Individual checkbox change
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const allChecked = document.querySelectorAll('.pov-checkbox:checked').length === checkboxes.length;
+                selectAllCheckbox.checked = allChecked;
+                updateApplyButton();
+            });
+        });
+
+        // Action dropdown change
+        bulkActionSelect.addEventListener('change', updateApplyButton);
+
+        // Confirm delete on bulk action
+        document.getElementById('pov-form').addEventListener('submit', function(e) {
+            if (bulkActionSelect.value === 'delete') {
+                const checkedCount = document.querySelectorAll('.pov-checkbox:checked').length;
+                if (!confirm(`Are you sure you want to move ${checkedCount} POVs to trash?`)) {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        // Add past-due highlighting
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        
+
         const rows = document.querySelectorAll('tbody tr');
         rows.forEach(row => {
-            const endDateCell = row.cells[5];
+            const endDateCell = row.cells[6];
             if (endDateCell) {
                 const endDateParts = endDateCell.textContent.trim().split('/');
                 const endDate = new Date(endDateParts[2], endDateParts[0] - 1, endDateParts[1]);
-                
-                const statusBadge = row.querySelector('td:nth-child(7) .badge');
+
+                const statusBadge = row.querySelector('td:nth-child(8) .badge');
                 const statusText = statusBadge ? statusBadge.textContent.trim() : '';
-                
+
                 if (endDate < today && statusText === 'Active') {
                     row.classList.add('table-danger');
                 }
