@@ -145,7 +145,8 @@
                                     {% if pov.current_stage == 'Deployment' %}bg-info
                                     {% elif pov.current_stage == 'Training 1' %}bg-primary
                                     {% elif pov.current_stage == 'Training 2' %}bg-warning
-                                    {% elif pov.current_stage == 'Wrap-Up' %}bg-success
+                                    {% elif pov.current_stage == 'POV Wrap-Up' %}bg-success
+                                    {% elif pov.current_stage == 'Completed' %}bg-success text-white
                                     {% elif pov.current_stage == 'Tech Call' %}bg-secondary
                                     {% endif %}">
                                     {{ pov.current_stage }}
