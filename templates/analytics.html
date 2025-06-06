@@ -6,7 +6,6 @@
 
 {% block head %}
 {{ super() }}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -145,174 +144,172 @@
 {% endblock %}
 
 {% block scripts %}
+<!-- Load Chart.js from reliable CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
 <script>
-// Wait for everything to load
-window.addEventListener('load', function() {
+// Test if Chart.js loaded
+console.log('Chart.js loaded?', typeof Chart !== 'undefined');
+
+// Wait a bit more to ensure everything is ready
+setTimeout(function() {
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js failed to load completely!');
+        return;
+    }
+    
     console.log('Starting charts initialization...');
     console.log('Status data:', {{ status_data|tojson }});
-    console.log('Stage data:', {{ stage_data|tojson }});
     
-    // Status Chart
-    const statusCtx = document.getElementById('statusChart');
-    if (statusCtx) {
-        const statusChart = new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: {{ status_labels|tojson }},
-                datasets: [{
-                    data: {{ status_data|tojson }},
-                    backgroundColor: [
-                        '#dc3545', // Closed Lost - red
-                        '#0275d8', // Closed Won - blue  
-                        '#28a745', // In Trial - green
-                        '#ffc107'  // Pending Sales - yellow
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                    }
-                }
-            }
-        });
-        console.log('Status chart created');
-    }
-
-    // Stage Chart
-    const stageCtx = document.getElementById('stageChart');
-    if (stageCtx) {
-        const stageChart = new Chart(stageCtx, {
-            type: 'bar',
-            data: {
-                labels: {{ stage_labels|tojson }},
-                datasets: [{
-                    label: 'POVs',
-                    data: {{ stage_data|tojson }},
-                    backgroundColor: '#17a2b8',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
-                    }
+    try {
+        // Status Chart
+        const statusCtx = document.getElementById('statusChart');
+        if (statusCtx) {
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: {{ status_labels|tojson }},
+                    datasets: [{
+                        data: {{ status_data|tojson }},
+                        backgroundColor: [
+                            '#dc3545', // Closed Lost - red
+                            '#0275d8', // Closed Won - blue  
+                            '#28a745', // In Trial - green
+                            '#ffc107'  // Pending Sales - yellow
+                        ]
+                    }]
                 },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-        console.log('Stage chart created');
-    }
-
-    // SE Chart
-    const seCtx = document.getElementById('seChart');
-    if (seCtx) {
-        const seChart = new Chart(seCtx, {
-            type: 'pie',
-            data: {
-                labels: {{ se_labels|tojson }},
-                datasets: [{
-                    data: {{ se_data|tojson }},
-                    backgroundColor: [
-                        '#6f42c1', // purple
-                        '#20c997', // teal
-                        '#fd7e14', // orange
-                        '#e83e8c', // pink
-                        '#6c757d'  // gray
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                    }
-                }
-            }
-        });
-        console.log('SE chart created');
-    }
-
-    // Won vs Lost Chart
-    const outcomeCtx = document.getElementById('outcomeChart');
-    if (outcomeCtx) {
-        const outcomeChart = new Chart(outcomeCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Won', 'Lost'],
-                datasets: [{
-                    label: 'POVs',
-                    data: [{{ won_count }}, {{ lost_count }}],
-                    backgroundColor: ['#0275d8', '#dc3545'],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
                         }
                     }
+                }
+            });
+            console.log('✅ Status chart created');
+        }
+
+        // Stage Chart
+        const stageCtx = document.getElementById('stageChart');
+        if (stageCtx) {
+            new Chart(stageCtx, {
+                type: 'bar',
+                data: {
+                    labels: {{ stage_labels|tojson }},
+                    datasets: [{
+                        label: 'POVs',
+                        data: {{ stage_data|tojson }},
+                        backgroundColor: '#17a2b8'
+                    }]
                 },
-                plugins: {
-                    legend: {
-                        display: false
-                    }
-                }
-            }
-        });
-        console.log('Outcome chart created');
-    }
-
-    // Monthly Chart
-    const monthlyCtx = document.getElementById('monthlyChart');
-    if (monthlyCtx) {
-        const monthlyChart = new Chart(monthlyCtx, {
-            type: 'line',
-            data: {
-                labels: {{ months|tojson }},
-                datasets: [{
-                    label: 'POVs Started',
-                    data: {{ month_data|tojson }},
-                    fill: false,
-                    borderColor: '#6f42c1',
-                    tension: 0.1,
-                    pointBackgroundColor: '#6f42c1'
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
                         }
                     }
                 }
-            }
-        });
-        console.log('Monthly chart created');
+            });
+            console.log('✅ Stage chart created');
+        }
+
+        // SE Chart
+        const seCtx = document.getElementById('seChart');
+        if (seCtx) {
+            new Chart(seCtx, {
+                type: 'pie',
+                data: {
+                    labels: {{ se_labels|tojson }},
+                    datasets: [{
+                        data: {{ se_data|tojson }},
+                        backgroundColor: [
+                            '#6f42c1', '#20c997', '#fd7e14', '#e83e8c', '#6c757d'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+            console.log('✅ SE chart created');
+        }
+
+        // Won vs Lost Chart
+        const outcomeCtx = document.getElementById('outcomeChart');
+        if (outcomeCtx) {
+            new Chart(outcomeCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Won', 'Lost'],
+                    datasets: [{
+                        label: 'POVs',
+                        data: [{{ won_count }}, {{ lost_count }}],
+                        backgroundColor: ['#0275d8', '#dc3545']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            console.log('✅ Outcome chart created');
+        }
+
+        // Monthly Chart
+        const monthlyCtx = document.getElementById('monthlyChart');
+        if (monthlyCtx) {
+            new Chart(monthlyCtx, {
+                type: 'line',
+                data: {
+                    labels: {{ months|tojson }},
+                    datasets: [{
+                        label: 'POVs Started',
+                        data: {{ month_data|tojson }},
+                        borderColor: '#6f42c1',
+                        backgroundColor: '#6f42c1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            console.log('✅ Monthly chart created');
+        }
+        
+        console.log('🎉 All charts completed!');
+        
+    } catch (error) {
+        console.error('❌ Error creating charts:', error);
     }
     
-    console.log('All charts initialization complete!');
-});
+}, 500); // Wait 500ms for Chart.js to fully load
+
 </script>
 {% endblock %}
