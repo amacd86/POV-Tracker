@@ -128,7 +128,9 @@
                         {% for note in notes %}
                             <div class="card mb-3">
                                 <div class="card-header bg-light py-1">
-                                    <small class="text-muted">{{ note.timestamp.strftime('%m/%d/%Y %H:%M') }}</small>
+                                    <small class="text-muted timestamp" data-utc="{{ note.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}">
+                                        {{ note.timestamp.strftime('%m/%d/%Y %H:%M') }}
+                                    </small>
                                 </div>
                                 <div class="card-body py-2">
                                     <p class="card-text mb-0">{{ note.content|nl2br|safe }}</p>
