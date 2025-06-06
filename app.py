@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, sen
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, DateField, TextAreaField, BooleanField, SubmitField, FloatField
-from wtforms.validators import DataRequired, Length, Optional
+from wtforms.validators import DataRequired, Email, Optional
 from datetime import datetime, timedelta
 import os
 import csv
@@ -24,60 +24,87 @@ db = SQLAlchemy()
 db.init_app(app)
 
 # Define models
+class SimplePOVForm:
+    """Simple form handler without flask-wtf dependency"""
+    def __init__(self, request=None):
+        self.request = request
+        self.errors = {}
+    
+    def validate(self):
+        """Basic validation"""
+        if not self.request:
+            return False
+        
+        required_fields = ['deal_name', 'customer_name', 'assigned_ae', 'start_date', 'current_stage', 'status']
+        
+        for field in required_fields:
+            if not self.request.form.get(field, '').strip():
+                self.errors[field] = f'{field.replace("_", " ").title()} is required'
+        
+        return len(self.errors) == 0
+
 class POV(db.Model):
     __tablename__ = 'povs'
-
+    
     id = db.Column(db.Integer, primary_key=True)
-    deal_name = db.Column(db.String(200), nullable=False)  # Renamed from customer_name
-    assigned_se = db.Column(db.String(100), nullable=False)
+    deal_name = db.Column(db.String(200), nullable=False)
+    assigned_se = db.Column(db.String(100))
     assigned_ae = db.Column(db.String(100), nullable=False)
-    start_date = db.Column(db.Date, nullable=False, default=datetime.utcnow)
-    projected_end_date = db.Column(db.Date, nullable=False)
-    actual_completion_date = db.Column(db.Date, nullable=True)  # New field
+    start_date = db.Column(db.Date, nullable=False)
+    projected_end_date = db.Column(db.Date)
+    actual_completion_date = db.Column(db.Date)
     current_stage = db.Column(db.String(50), nullable=False)
     roadblocks = db.Column(db.Text)
-    overcome_roadblocks = db.Column(db.Boolean, default=False)
-    status = db.Column(db.String(20), default='In Trial')
-    deal_amount = db.Column(db.Float, nullable=True)  # Renamed from price
-    success_criteria = db.Column(db.Text)  # New field
-    technical_win = db.Column(db.String(10), default='Pending')  # New field
-    roadblock_resolution = db.Column(db.Text)  # New field
-    win_loss_reason = db.Column(db.Text)  # New field
-    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    overcome_roadblocks = db.Column(db.Text)
+    status = db.Column(db.String(50), nullable=False)
+    deal_amount = db.Column(db.Float)
+    success_criteria = db.Column(db.Text)
+    technical_win = db.Column(db.Boolean, default=False)
+    roadblock_resolution = db.Column(db.Text)
+    win_loss_reason = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     deleted = db.Column(db.Boolean, default=False)
     deleted_at = db.Column(db.DateTime)
-
-    # Enhanced Roadblock Fields
-    roadblock_category = db.Column(db.String(50))  # Technical, Budget, Timeline, Decision Maker, Competitive
-    roadblock_severity = db.Column(db.String(10))  # High, Medium, Low
-    roadblock_owner = db.Column(db.String(20))     # AE, SE, Leadership, Engineering
+    
+    # NEW columns
+    customer_name = db.Column(db.String(200), nullable=False, default='Contact Required')
+    customer_email = db.Column(db.String(200))
+    sales_engineer = db.Column(db.String(100))
+    roadblock_category = db.Column(db.String(50))
+    roadblock_severity = db.Column(db.String(10))
+    roadblock_owner = db.Column(db.String(20))
     roadblock_notes = db.Column(db.Text)
-    roadblock_created_date = db.Column(db.Date, default=datetime.utcnow)
+    roadblock_created_date = db.Column(db.Date)
     roadblock_resolved_date = db.Column(db.Date)
-
-    # Relationship
-    notes = db.relationship('Note', backref='pov', lazy=True, cascade='all, delete-orphan')
-
-    def __repr__(self):
-        return f"POV('{self.deal_name}', '{self.current_stage}', '{self.status}')"
+    notes = db.Column(db.Text)
 
     @property
     def days_stagnant(self):
+        """Calculate days since roadblock was created (if unresolved)"""
         if self.roadblock_created_date and not self.roadblock_resolved_date:
             return (datetime.utcnow().date() - self.roadblock_created_date).days
         return 0
 
-class Note(db.Model):
-    __tablename__ = 'notes'
+    @property
+    def company_name(self):
+        return self.deal_name
 
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    pov_id = db.Column(db.Integer, db.ForeignKey('povs.id'), nullable=False)
+    @property
+    def stage(self):
+        return self.current_stage
 
-    def __repr__(self):
-        return f"Note('{self.timestamp}', '{self.content[:20]}...')"
+    @property
+    def account_executive(self):
+        return self.assigned_ae
+
+    @property
+    def expected_end_date(self):
+        return self.projected_end_date
+
+    @property
+    def actual_end_date(self):
+        return self.actual_completion_date
 
 # Custom Jinja2 filters and globals
 @app.template_filter('nl2br')
@@ -92,30 +119,76 @@ def inject_now():
 
 # Forms
 class POVForm(FlaskForm):
-    deal_name = StringField('Deal Name', validators=[DataRequired(), Length(min=2, max=200)])  # Renamed
-    assigned_se = SelectField('Assigned SE', validators=[DataRequired()],
-                              choices=[('Angus MacDonald', 'Angus MacDonald'), ('John Doe', 'John Doe'), ('Jane Smith', 'Jane Smith')])
-    assigned_ae = SelectField('Assigned AE', validators=[DataRequired()],
-                              choices=[('Rob Lynch', 'Rob Lynch'), ('Andrew Gross', 'Andrew Gross'), ('Melissa Pearson', 'Melissa Pearson'),
-                                       ('Cory Duplease', 'Cory Duplease'), ('Tom Devoe', 'Tom Devoe'), ('Tim Lake', 'Tim Lake')])
-    start_date = DateField('Start Date', validators=[DataRequired()], format='%Y-%m-%d')
-    projected_end_date = DateField('Projected End Date', validators=[DataRequired()], format='%Y-%m-%d')
-    actual_completion_date = DateField('Actual Completion Date', validators=[Optional()], format='%Y-%m-%d')  # New field
-    current_stage = SelectField('Current Stage', validators=[DataRequired()],
-                                choices=[('Deployment', 'Deployment'), ('Training 1', 'Training 1'),
-                                         ('Training 2', 'Training 2'), ('POV Wrap-Up', 'POV Wrap-Up'), ('Completed', 'Completed')])
-    roadblocks = TextAreaField('Roadblocks')
-    overcome_roadblocks = BooleanField('Roadblocks Overcome')
-    status = SelectField('Status', validators=[DataRequired()],
-                         choices=[('In Trial', 'In Trial'), ('Pending Sales', 'Pending Sales'),
-                                  ('Closed Won', 'Closed Won'), ('Closed Lost', 'Closed Lost'), ('On Hold', 'On Hold')])
-    deal_amount = FloatField('Deal Amount ($)', validators=[Optional()])  # Renamed
-    success_criteria = TextAreaField('Success Criteria')  # New field
-    technical_win = SelectField('Technical Win', choices=[('Pending', 'Pending'), ('Yes', 'Yes'), ('No', 'No')], default='Pending')  # New field
-    roadblock_resolution = TextAreaField('Roadblock Resolution')  # New field
-    win_loss_reason = TextAreaField('Win/Loss Reason')  # New field
-    initial_notes = TextAreaField('Initial Notes')
-    submit = SubmitField('Submit')
+    # Basic POV Information
+    company_name = StringField('Company Name', validators=[DataRequired()])
+    deal_name = StringField('Deal Name', validators=[DataRequired()])
+    customer_name = StringField('Customer Contact Name', validators=[DataRequired()])
+    customer_email = StringField('Customer Email', validators=[Email(), Optional()])
+    
+    # POV Details
+    stage = SelectField('Stage', choices=[
+        ('', 'Select Stage'),
+        ('Initial Contact', 'Initial Contact'),
+        ('Discovery', 'Discovery'),
+        ('Deployment', 'Deployment'),
+        ('Training 1', 'Training 1'),
+        ('Training 2', 'Training 2'),
+        ('POV Wrap-Up', 'POV Wrap-Up'),
+        ('Evaluation', 'Evaluation')
+    ], validators=[DataRequired()])
+    
+    status = SelectField('Status', choices=[
+        ('', 'Select Status'),
+        ('Active', 'Active'),
+        ('On Hold', 'On Hold'),
+        ('Closed Won', 'Closed Won'),
+        ('Closed Lost', 'Closed Lost')
+    ], validators=[DataRequired()])
+    
+    # Dates
+    start_date = DateField('Start Date', validators=[DataRequired()])
+    expected_end_date = DateField('Expected End Date', validators=[Optional()])
+    actual_end_date = DateField('Actual End Date', validators=[Optional()])
+    
+    # Sales Team
+    account_executive = StringField('Account Executive', validators=[DataRequired()])
+    sales_engineer = StringField('Sales Engineer', validators=[Optional()])
+    
+    # Technical Information
+    technical_win = BooleanField('Technical Win')
+    
+    # Enhanced Roadblock Fields (from Phase 1)
+    roadblock_category = SelectField('Roadblock Category', choices=[
+        ('', 'No Roadblock'),
+        ('Technical', '🔧 Technical'),
+        ('Budget', '💰 Budget'),
+        ('Timeline', '⏰ Timeline'),
+        ('Decision Maker', '👥 Decision Maker'),
+        ('Competitive', '⚔️ Competitive')
+    ], validators=[Optional()])
+    
+    roadblock_severity = SelectField('Roadblock Severity', choices=[
+        ('', 'Select Severity'),
+        ('Low', '🟢 Low'),
+        ('Medium', '🟡 Medium'),
+        ('High', '🔴 High')
+    ], validators=[Optional()])
+    
+    roadblock_owner = SelectField('Roadblock Owner', choices=[
+        ('', 'Select Owner'),
+        ('AE', '👔 AE (Account Executive)'),
+        ('SE', '🛠️ SE (Sales Engineer)'),
+        ('Leadership', '👑 Leadership'),
+        ('Engineering', '⚙️ Engineering')
+    ], validators=[Optional()])
+    
+    roadblock_notes = TextAreaField('Roadblock Notes', validators=[Optional()])
+    
+    # Additional Fields
+    notes = TextAreaField('General Notes', validators=[Optional()])
+    
+    # Submit
+    submit = SubmitField('Save POV')
 
 class NoteForm(FlaskForm):
     content = TextAreaField('Note', validators=[DataRequired()])
@@ -338,152 +411,173 @@ def dashboard():
 
 @app.route('/pov/new', methods=['GET', 'POST'])
 def new_pov():
-    form = POVForm()
-
-    # Set default dates
-    if request.method == 'GET':
-        form.start_date.data = datetime.now().date()
-        form.projected_end_date.data = datetime.now().date() + timedelta(days=30)
-
-    if form.validate_on_submit():
-        try:
+    if request.method == 'POST':
+        form = SimplePOVForm(request)
+        if form.validate():
             pov = POV(
-                deal_name=form.deal_name.data,
-                assigned_se=form.assigned_se.data,
-                assigned_ae=form.assigned_ae.data,
-                start_date=form.start_date.data,
-                projected_end_date=form.projected_end_date.data,
-                actual_completion_date=form.actual_completion_date.data,
-                current_stage=form.current_stage.data,
-                roadblocks=form.roadblocks.data,
-                overcome_roadblocks=form.overcome_roadblocks.data,
-                status=form.status.data,
-                deal_amount=form.deal_amount.data,
-                success_criteria=form.success_criteria.data,
-                technical_win=form.technical_win.data,
-                roadblock_resolution=form.roadblock_resolution.data,
-                win_loss_reason=form.win_loss_reason.data,
-                deleted=False
+                deal_name=request.form['deal_name'],
+                customer_name=request.form['customer_name'],
+                customer_email=request.form.get('customer_email', ''),
+                assigned_ae=request.form['assigned_ae'],
+                assigned_se=request.form.get('assigned_se', ''),
+                start_date=datetime.strptime(request.form['start_date'], '%Y-%m-%d').date(),
+                projected_end_date=datetime.strptime(request.form['projected_end_date'], '%Y-%m-%d').date() if request.form.get('projected_end_date') else None,
+                current_stage=request.form['current_stage'],
+                status=request.form['status'],
+                deal_amount=float(request.form['deal_amount']) if request.form.get('deal_amount') else None,
+                technical_win=bool(request.form.get('technical_win')),
+                notes=request.form.get('notes', ''),
+                success_criteria=request.form.get('success_criteria', ''),
+                roadblocks=request.form.get('roadblocks', '')
             )
+            # Handle new roadblock fields
+            if request.form.get('roadblock_category'):
+                pov.roadblock_category = request.form['roadblock_category']
+                pov.roadblock_severity = request.form.get('roadblock_severity')
+                pov.roadblock_owner = request.form.get('roadblock_owner')
+                pov.roadblock_notes = request.form.get('roadblock_notes', '')
+                pov.roadblock_created_date = datetime.utcnow().date()
             db.session.add(pov)
             db.session.commit()
-
-            # Add initial note if provided
-            if form.initial_notes.data:
-                note = Note(
-                    content=form.initial_notes.data,
-                    pov_id=pov.id
-                )
-                db.session.add(note)
-                db.session.commit()
-
             flash('POV created successfully!', 'success')
-            return redirect(url_for('dashboard'))
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Error creating POV: {str(e)}', 'danger')
-
-    return render_template('pov_form.html', form=form, title='New POV')
+            return redirect(url_for('pov_detail', id=pov.id))
+        else:
+            for field, error in form.errors.items():
+                flash(f'{error}', 'error')
+    return render_template('pov_form.html', title='New POV')
 
 @app.route('/pov/<int:id>/edit', methods=['GET', 'POST'])
 def edit_pov(id):
-    try:
-        pov = POV.query.get_or_404(id)
-        form = POVForm(obj=pov)
-
-        if request.method == 'GET':
-            form.initial_notes.data = ''
-
-        if form.validate_on_submit():
-            pov.deal_name = form.deal_name.data
-            pov.assigned_se = form.assigned_se.data
-            pov.assigned_ae = form.assigned_ae.data
-            pov.start_date = form.start_date.data
-            pov.projected_end_date = form.projected_end_date.data
-            pov.actual_completion_date = form.actual_completion_date.data
-            pov.current_stage = form.current_stage.data
-            pov.roadblocks = form.roadblocks.data
-            pov.overcome_roadblocks = form.overcome_roadblocks.data
-            pov.status = form.status.data
-            pov.deal_amount = form.deal_amount.data
-            pov.success_criteria = form.success_criteria.data
-            pov.technical_win = form.technical_win.data
-            pov.roadblock_resolution = form.roadblock_resolution.data
-            pov.win_loss_reason = form.win_loss_reason.data
-
-            db.session.commit()
-
-            # Add a new note if provided
-            if form.initial_notes.data:
-                note = Note(
-                    content=form.initial_notes.data,
-                    pov_id=pov.id
-                )
-                db.session.add(note)
-                db.session.commit()
-
-            flash('POV updated successfully!', 'success')
-            return redirect(url_for('view_pov', id=pov.id))
-
-        return render_template('pov_form.html', form=form, title='Edit POV')
-    except Exception as e:
-        flash(f'Error editing POV: {str(e)}', 'danger')
-        return redirect(url_for('dashboard'))
+    pov = POV.query.get_or_404(id)
+    form = POVForm(obj=pov)
+    
+    if form.validate_on_submit():
+        # Check if roadblock status changed
+        old_roadblock = pov.roadblock_category
+        new_roadblock = form.roadblock_category.data
+        
+        # Update all fields
+        form.populate_obj(pov)
+        
+        # Handle roadblock date logic
+        if new_roadblock and not old_roadblock:
+            # New roadblock added
+            pov.roadblock_created_date = datetime.utcnow().date()
+            pov.roadblock_resolved_date = None
+        elif not new_roadblock and old_roadblock:
+            # Roadblock removed (resolved)
+            pov.roadblock_resolved_date = datetime.utcnow().date()
+        
+        pov.updated_at = datetime.utcnow()
+        db.session.commit()
+        
+        flash('POV updated successfully!', 'success')
+        return redirect(url_for('pov_detail', id=pov.id))
+    
+    return render_template('pov_form.html', form=form, title='Edit POV', pov=pov)
 
 @app.route('/pov/<int:id>')
-def view_pov(id):
+def pov_detail(id):
+    pov = POV.query.get_or_404(id)
+    return render_template('pov_detail.html', pov=pov)
+
+@app.route('/dashboard')
+def dashboard():
+    metrics = get_pov_metrics()
+    
+    # Get status distribution for pie chart with percentages
+    status_data = []
+    total_povs = metrics['total_povs']
+    
+    if total_povs > 0:
+        won_pct = (metrics['closed_won_count'] / total_povs) * 100
+        lost_pct = (metrics['closed_lost_count'] / total_povs) * 100
+        in_progress_count = total_povs - metrics['completed_povs']
+        in_progress_pct = (in_progress_count / total_povs) * 100
+        
+        status_data = [
+            {
+                'label': f"Closed Won: {metrics['closed_won_count']} ({won_pct:.0f}%)",
+                'value': metrics['closed_won_count'],
+                'color': '#28a745'
+            },
+            {
+                'label': f"Closed Lost: {metrics['closed_lost_count']} ({lost_pct:.0f}%)",
+                'value': metrics['closed_lost_count'],
+                'color': '#dc3545'
+            },
+            {
+                'label': f"In Progress: {in_progress_count} ({in_progress_pct:.0f}%)",
+                'value': in_progress_count,
+                'color': '#ffc107'
+            }
+        ]
+    
+    return render_template('dashboard.html', 
+                         metrics=metrics, 
+                         status_data=status_data)
+
+def get_pov_metrics():
+    """Calculate POV metrics with corrected logic"""
+    # Get completed POVs only (excludes pending/in-progress)
+    completed_povs = POV.query.filter(
+        POV.deleted == False,
+        POV.status.in_(['Closed Won', 'Closed Lost'])
+    ).count()
+    
+    # Get won POVs
+    closed_won_count = POV.query.filter(
+        POV.deleted == False, 
+        POV.status == 'Closed Won'
+    ).count()
+    
+    # Get lost POVs
+    closed_lost_count = POV.query.filter(
+        POV.deleted == False,
+        POV.status == 'Closed Lost'
+    ).count()
+    
+    # Get technical wins (only from completed POVs)
+    technical_wins = POV.query.filter(
+        POV.deleted == False,
+        POV.technical_win == True,
+        POV.status.in_(['Closed Won', 'Closed Lost'])
+    ).count()
+    
+    # FIXED CALCULATIONS - Only use completed POVs as denominator
+    pov_conversion_rate = (closed_won_count / completed_povs) * 100 if completed_povs > 0 else 0
+    tech_win_rate = (technical_wins / completed_povs) * 100 if completed_povs > 0 else 0
+    
+    # Stage counts for new metric cards
+    stage_counts = {}
+    for stage in ['Deployment', 'Training 1', 'Training 2', 'POV Wrap-Up']:
+        stage_counts[stage.lower().replace(' ', '_')] = POV.query.filter(
+            POV.deleted == False,
+            POV.stage == stage
+        ).count()
+    
+    return {
+        'total_povs': POV.query.filter(POV.deleted == False).count(),
+        'completed_povs': completed_povs,
+        'closed_won_count': closed_won_count,
+        'closed_lost_count': closed_lost_count,
+        'technical_wins': technical_wins,
+        'pov_conversion_rate': round(pov_conversion_rate, 1),
+        'tech_win_rate': round(tech_win_rate, 1),
+        'stage_counts': stage_counts
+    }
+
+@app.route('/pov/<int:id>/delete')
+def delete_pov(id):
     try:
         pov = POV.query.get_or_404(id)
-        note_form = NoteForm()
-        notes = Note.query.filter_by(pov_id=id).order_by(Note.timestamp.desc()).all()
-        return render_template('pov_detail.html', pov=pov, note_form=note_form, notes=notes)
+        pov.deleted = True
+        pov.deleted_at = datetime.now()
+        db.session.commit()
+        flash('POV moved to trash.', 'success')
     except Exception as e:
-        flash(f'Error viewing POV: {str(e)}', 'danger')
-        return redirect(url_for('dashboard'))
-
-@app.route('/pov/<int:id>/add_note', methods=['POST'])
-def add_note(id):
-    try:
-        pov = POV.query.get_or_404(id)
-        form = NoteForm()
-
-        if form.validate_on_submit():
-            note = Note(
-                content=form.content.data,
-                pov_id=id
-            )
-            db.session.add(note)
-            db.session.commit()
-            flash('Note added successfully!', 'success')
-    except Exception as e:
-        flash(f'Error adding note: {str(e)}', 'danger')
-
-    return redirect(url_for('view_pov', id=id))
-
-@app.route('/pov/<int:id>/update_stage/<stage>')
-def update_stage(id, stage):
-    try:
-        pov = POV.query.get_or_404(id)
-        if stage in ['Deployment', 'Training 1', 'Training 2', 'Wrap-Up', 'Tech Call']:
-            pov.current_stage = stage
-            db.session.commit()
-            flash(f'POV stage updated to {stage}!', 'success')
-    except Exception as e:
-        flash(f'Error updating stage: {str(e)}', 'danger')
-
-    return redirect(url_for('view_pov', id=id))
-
-@app.route('/pov/<int:id>/mark_complete/<status>')
-def mark_complete(id, status):
-    try:
-        pov = POV.query.get_or_404(id)
-        if status in ['Closed - Won', 'Closed - Lost']:
-            pov.status = status
-            db.session.commit()
-            flash(f'POV marked as {status}!', 'success')
-    except Exception as e:
-        flash(f'Error marking POV complete: {str(e)}', 'danger')
-
+        flash(f'Error deleting POV: {str(e)}', 'danger')
+    
     return redirect(url_for('dashboard'))
 
 @app.route('/export_csv')
@@ -642,19 +736,6 @@ def bulk_action():
     except Exception as e:
         db.session.rollback()
         flash(f'Error performing bulk action: {str(e)}', 'danger')
-    
-    return redirect(url_for('dashboard'))
-
-@app.route('/pov/<int:id>/delete')
-def delete_pov(id):
-    try:
-        pov = POV.query.get_or_404(id)
-        pov.deleted = True
-        pov.deleted_at = datetime.now()
-        db.session.commit()
-        flash('POV moved to trash.', 'success')
-    except Exception as e:
-        flash(f'Error deleting POV: {str(e)}', 'danger')
     
     return redirect(url_for('dashboard'))
 

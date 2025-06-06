@@ -5,200 +5,225 @@
 {% block page_title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="card shadow-sm">
-    <div class="card-header">
-        <div class="row align-items-center">
-            <div class="col">
-                <h5 class="mb-0">{{ title }}</h5>
-            </div>
-            <div class="col-auto">
-                <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
-                </a>
-            </div>
-        </div>
-    </div>
-    <div class="card-body">
-        <form method="post" action="">
-            {{ form.csrf_token }}
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="deal_name" class="form-label">Deal Name</label>
-                    {{ form.deal_name(class="form-control", id="deal_name") }}
-                    {% if form.deal_name.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.deal_name.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>{{ title or 'POV Form' }}</h3>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <label for="assigned_se" class="form-label">Assigned SE</label>
-                    {{ form.assigned_se(class="form-select") }}
-                    {% if form.assigned_se.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.assigned_se.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label for="assigned_ae" class="form-label">Assigned AE</label>
-                    {{ form.assigned_ae(class="form-select") }}
-                    {% if form.assigned_ae.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.assigned_ae.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-3 mb-3">
-                    <label for="start_date" class="form-label">Start Date</label>
-                    {{ form.start_date(class="form-control") }}
-                    {% if form.start_date.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.start_date.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label for="projected_end_date" class="form-label">Projected End Date</label>
-                    {{ form.projected_end_date(class="form-control") }}
-                    {% if form.projected_end_date.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.projected_end_date.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label for="current_stage" class="form-label">Current Stage</label>
-                    {{ form.current_stage(class="form-select") }}
-                    {% if form.current_stage.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.current_stage.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="col-md-3 mb-3">
-                    <label for="status" class="form-label">Status</label>
-                    {{ form.status(class="form-select") }}
-                    {% if form.status.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.status.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-md-3 mb-3">
-                    <label for="deal_amount" class="form-label">Deal Amount ($)</label>
-                    {{ form.deal_amount(class="form-control") }}
-                    <div class="form-text">Enter the deal amount (optional)</div>
-                    {% if form.deal_amount.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.deal_amount.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-                <div class="col-md-9 mb-3">
-                    <label for="roadblocks" class="form-label">Roadblocks</label>
-                    {{ form.roadblocks(class="form-control", rows=3) }}
-                    <div class="form-text">Describe any current roadblocks or challenges.</div>
-                    {% if form.roadblocks.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.roadblocks.errors %}
-                                {{ error }}
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-12">
-                    <div class="form-check">
-                        {{ form.overcome_roadblocks(class="form-check-input") }}
-                        <label class="form-check-label" for="overcome_roadblocks">
-                            Roadblocks Overcome
-                        </label>
-                        <div class="form-text">Check this box if all roadblocks have been resolved.</div>
-                        {% if form.overcome_roadblocks.errors %}
-                            <div class="invalid-feedback d-block">
-                                {% for error in form.overcome_roadblocks.errors %}
-                                    {{ error }}
-                                {% endfor %}
+                <div class="card-body">
+                    <form method="POST">
+                        <!-- Basic Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="deal_name" class="form-label">Deal Name *</label>
+                                    <input type="text" class="form-control" id="deal_name" name="deal_name" required>
+                                </div>
                             </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <div class="row mb-3">
-                <div class="col-md-12">
-                    <label for="initial_notes" class="form-label">
-                        {% if title == 'New POV' %}Initial Notes{% else %}Add New Note{% endif %}
-                    </label>
-                    {{ form.initial_notes(class="form-control", rows=5) }}
-                    <div class="form-text">
-                        {% if title == 'New POV' %}
-                            Add any relevant notes about this POV (optional).
-                        {% else %}
-                            Add a new note to this POV's history (optional).
-                        {% endif %}
-                    </div>
-                    {% if form.initial_notes.errors %}
-                        <div class="invalid-feedback d-block">
-                            {% for error in form.initial_notes.errors %}
-                                {{ error }}
-                            {% endfor %}
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="customer_name" class="form-label">Customer Contact Name *</label>
+                                    <input type="text" class="form-control" id="customer_name" name="customer_name" required>
+                                </div>
+                            </div>
                         </div>
-                    {% endif %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="customer_email" class="form-label">Customer Email</label>
+                                    <input type="email" class="form-control" id="customer_email" name="customer_email">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="deal_amount" class="form-label">Deal Amount ($)</label>
+                                    <input type="number" class="form-control" id="deal_amount" name="deal_amount" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Team Assignment -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="assigned_ae" class="form-label">Account Executive *</label>
+                                    <input type="text" class="form-control" id="assigned_ae" name="assigned_ae" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="assigned_se" class="form-label">Sales Engineer</label>
+                                    <input type="text" class="form-control" id="assigned_se" name="assigned_se">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- POV Details -->
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="current_stage" class="form-label">Current Stage *</label>
+                                    <select class="form-control" id="current_stage" name="current_stage" required>
+                                        <option value="">Select Stage</option>
+                                        <option value="Initial Contact">Initial Contact</option>
+                                        <option value="Discovery">Discovery</option>
+                                        <option value="Deployment">Deployment</option>
+                                        <option value="Training 1">Training 1</option>
+                                        <option value="Training 2">Training 2</option>
+                                        <option value="POV Wrap-Up">POV Wrap-Up</option>
+                                        <option value="Evaluation">Evaluation</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="status" class="form-label">Status *</label>
+                                    <select class="form-control" id="status" name="status" required>
+                                        <option value="">Select Status</option>
+                                        <option value="Active">Active</option>
+                                        <option value="On Hold">On Hold</option>
+                                        <option value="Closed Won">Closed Won</option>
+                                        <option value="Closed Lost">Closed Lost</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mt-4">
+                                    <input type="checkbox" class="form-check-input" id="technical_win" name="technical_win" value="1">
+                                    <label class="form-check-label" for="technical_win">
+                                        Technical Win
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dates -->
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="start_date" class="form-label">Start Date *</label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="projected_end_date" class="form-label">Projected End Date</label>
+                                    <input type="date" class="form-control" id="projected_end_date" name="projected_end_date">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label for="actual_completion_date" class="form-label">Actual Completion Date</label>
+                                    <input type="date" class="form-control" id="actual_completion_date" name="actual_completion_date">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Enhanced Roadblock Section -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5>🚧 Roadblock Information (Optional)</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-3">
+                                            <label for="roadblock_category" class="form-label">Category</label>
+                                            <select class="form-control" id="roadblock_category" name="roadblock_category">
+                                                <option value="">No Roadblock</option>
+                                                <option value="Technical">🔧 Technical</option>
+                                                <option value="Budget">💰 Budget</option>
+                                                <option value="Timeline">⏰ Timeline</option>
+                                                <option value="Decision Maker">👥 Decision Maker</option>
+                                                <option value="Competitive">⚔️ Competitive</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-3">
+                                            <label for="roadblock_severity" class="form-label">Severity</label>
+                                            <select class="form-control" id="roadblock_severity" name="roadblock_severity">
+                                                <option value="">Select Severity</option>
+                                                <option value="Low">🟢 Low</option>
+                                                <option value="Medium">🟡 Medium</option>
+                                                <option value="High">🔴 High</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-3">
+                                            <label for="roadblock_owner" class="form-label">Owner</label>
+                                            <select class="form-control" id="roadblock_owner" name="roadblock_owner">
+                                                <option value="">Select Owner</option>
+                                                <option value="AE">👔 AE</option>
+                                                <option value="SE">🛠️ SE</option>
+                                                <option value="Leadership">👑 Leadership</option>
+                                                <option value="Engineering">⚙️ Engineering</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="roadblock_notes" class="form-label">Roadblock Notes</label>
+                                    <textarea class="form-control" id="roadblock_notes" name="roadblock_notes" rows="3" placeholder="Describe the roadblock and action steps..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Information -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="success_criteria" class="form-label">Success Criteria</label>
+                                    <textarea class="form-control" id="success_criteria" name="success_criteria" rows="3" placeholder="What defines success for this POV?"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="notes" class="form-label">General Notes</label>
+                                    <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Additional notes..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Legacy Roadblock Fields (for compatibility) -->
+                        <div class="form-group mb-3">
+                            <label for="roadblocks" class="form-label">Legacy Roadblocks</label>
+                            <textarea class="form-control" id="roadblocks" name="roadblocks" rows="2" placeholder="Any existing roadblock notes..."></textarea>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="form-group mt-4">
+                            <button type="submit" class="btn btn-primary">Save POV</button>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary ml-2">Cancel</a>
+                        </div>
+                    </form>
                 </div>
             </div>
-
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary">Cancel</a>
-                <button type="submit" class="btn btn-primary">
-                    {% if title == 'New POV' %}
-                        <i class="fas fa-plus me-1"></i>Create POV
-                    {% else %}
-                        <i class="fas fa-save me-1"></i>Update POV
-                    {% endif %}
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-{% if title == 'Edit POV' %}
-<div class="card shadow-sm mt-3">
-    <div class="card-header">
-        <h6 class="mb-0">Quick Actions</h6>
-    </div>
-    <div class="card-body">
-        <div class="alert alert-info">
-            <strong>Tip:</strong> You can also update the stage and status from the POV detail view after saving.
         </div>
     </div>
 </div>
-{% endif %}
+
+<script>
+// Auto-enable roadblock fields when category is selected
+document.getElementById('roadblock_category').addEventListener('change', function() {
+    const severity = document.getElementById('roadblock_severity');
+    const owner = document.getElementById('roadblock_owner');
+    
+    if (this.value) {
+        severity.required = true;
+        owner.required = true;
+    } else {
+        severity.required = false;
+        owner.required = false;
+        severity.value = '';
+        owner.value = '';
+    }
+});
+</script>
 {% endblock %}
 
 {% block scripts %}
