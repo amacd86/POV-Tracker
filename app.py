@@ -327,13 +327,9 @@ def dashboard():
     end_date_to = request.args.get('end_date_to', '')
 
     try:
-        # Try to ensure tables exist
         db.create_all()
-        
-        # Base query - exclude deleted POVs
         query = POV.query.filter_by(deleted=False)
 
-        # Apply filters if provided
         if se_filter:
             query = query.filter(POV.assigned_se == se_filter)
         if ae_filter:
@@ -341,7 +337,6 @@ def dashboard():
         if status_filter:
             query = query.filter(POV.status == status_filter)
 
-        # Apply date filters with proper error handling
         if start_date_from:
             try:
                 from_date = datetime.strptime(start_date_from, '%Y-%m-%d').date()
@@ -370,17 +365,15 @@ def dashboard():
             except ValueError:
                 flash('Invalid end date format. Please use YYYY-MM-DD format.', 'warning')
 
-        # Get all POVs with applied filters
         povs = query.all()
 
-        # Get unique values for filter dropdowns safely
         try:
             all_ses = db.session.query(POV.assigned_se).filter_by(deleted=False).distinct().all()
             all_aes = db.session.query(POV.assigned_ae).filter_by(deleted=False).distinct().all()
         except:
             all_ses = []
             all_aes = []
-        
+
         all_statuses = [('Active', 'Active'), ('On Hold', 'On Hold'), ('Closed - Won', 'Closed - Won'), ('Closed - Lost', 'Closed - Lost')]
 
         return render_template('dashboard.html', povs=povs,
@@ -396,17 +389,16 @@ def dashboard():
                                end_date_to=end_date_to,
                                metrics=metrics,
                                status_data=status_data)
-    
+
     except Exception as e:
-        # If there's a database error, try to reinitialize
         flash('Database needs to be initialized. Creating tables...', 'info')
         if init_db():
             flash('Database initialized successfully! Please refresh the page.', 'success')
         else:
             flash(f'Database error: {str(e)}', 'danger')
-        
-        return render_template('dashboard.html', povs=[], all_ses=[], all_aes=[], all_statuses=[], 
-                               se_filter='', ae_filter='', status_filter='', 
+
+        return render_template('dashboard.html', povs=[], all_ses=[], all_aes=[], all_statuses=[],
+                               se_filter='', ae_filter='', status_filter='',
                                start_date_from='', start_date_to='', end_date_from='', end_date_to='')
 
 @app.route('/pov/new', methods=['GET', 'POST'])
