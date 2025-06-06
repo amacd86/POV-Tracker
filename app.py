@@ -586,7 +586,7 @@ def analytics():
         se_labels = [se for se, _ in se_counts]
         se_data = [count for _, count in se_counts]
         
-        # Calculate metrics with CORRECT status names
+        # Calculate basic and advanced metrics
         try:
             two_weeks_from_now = today + timedelta(days=14)
             ending_soon = POV.query.filter(
@@ -629,11 +629,54 @@ def analytics():
                 POV.updated_at >= ninety_days_ago
             ).count()
             
-            print(f"Debug - Metrics: ending_soon={ending_soon}, overdue={overdue}, avg_duration={avg_duration}, total_value={total_value}, won={won_count}, lost={lost_count}")
+            # NEW ADVANCED METRICS
+            
+            # Technical Wins - POVs with technical_win = 'Yes'
+            technical_wins = POV.query.filter(
+                POV.deleted == False,
+                POV.technical_win == 'Yes'
+            ).count()
+            
+            # POVs in Progress (In Trial + Pending Sales)
+            povs_in_progress = POV.query.filter(
+                POV.deleted == False,
+                POV.status.in_(['In Trial', 'Pending Sales'])
+            ).count()
+            
+            # Total POVs ever (for conversion calculations)
+            total_povs_ever = POV.query.filter(POV.deleted == False).count()
+            
+            # Total Closed Won ever
+            total_closed_won = POV.query.filter(
+                POV.deleted == False,
+                POV.status == 'Closed Won'
+            ).count()
+            
+            # POV to Closed Won Conversion Rate
+            pov_conversion_rate = round((total_closed_won / total_povs_ever) * 100, 1) if total_povs_ever > 0 else 0
+            
+            # Technical Win Rate (Technical Wins / Total POVs)
+            technical_win_rate = round((technical_wins / total_povs_ever) * 100, 1) if total_povs_ever > 0 else 0
+            
+            # Technical Loss Count
+            technical_losses = POV.query.filter(
+                POV.deleted == False,
+                POV.technical_win == 'No'
+            ).count()
+            
+            # Technical Loss Rate
+            technical_loss_rate = round((technical_losses / total_povs_ever) * 100, 1) if total_povs_ever > 0 else 0
+            
+            # POV Still Pending Rate (In Trial + Pending Sales / Total)
+            pov_pending_rate = round((povs_in_progress / total_povs_ever) * 100, 1) if total_povs_ever > 0 else 0
+            
+            print(f"Debug - Advanced Metrics: tech_wins={technical_wins}, pov_conversion={pov_conversion_rate}%, tech_win_rate={technical_win_rate}%, povs_in_progress={povs_in_progress}")
             
         except Exception as e:
             print(f"Error calculating metrics: {e}")
             ending_soon = overdue = avg_duration = total_value = won_count = lost_count = 0
+            technical_wins = pov_conversion_rate = technical_win_rate = povs_in_progress = 0
+            technical_losses = technical_loss_rate = pov_pending_rate = 0
         
         # Monthly POV starts
         try:
@@ -659,8 +702,7 @@ def analytics():
         
         # Debug: Print what we're sending to template
         print(f"Sending to template - status_labels: {status_labels}, status_data: {status_data}")
-        print(f"Sending to template - stage_labels: {stage_labels}, stage_data: {stage_data}")
-        print(f"Sending to template - se_labels: {se_labels}, se_data: {se_data}")
+        print(f"Sending advanced metrics - tech_wins: {technical_wins}, conversion_rate: {pov_conversion_rate}")
         
         return render_template(
             'analytics.html',
@@ -677,7 +719,15 @@ def analytics():
             won_count=won_count,
             lost_count=lost_count,
             months=monthly_labels,
-            month_data=monthly_data
+            month_data=monthly_data,
+            # NEW ADVANCED METRICS
+            technical_wins=technical_wins,
+            pov_conversion_rate=pov_conversion_rate,
+            technical_win_rate=technical_win_rate,
+            povs_in_progress=povs_in_progress,
+            technical_losses=technical_losses,
+            technical_loss_rate=technical_loss_rate,
+            pov_pending_rate=pov_pending_rate
         )
     except Exception as e:
         flash(f'Error loading analytics: {str(e)}', 'danger')
