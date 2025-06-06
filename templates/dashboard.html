@@ -163,7 +163,7 @@
                                     {{ pov.status }}
                                 </span>
                             </td>
-                            <td>{% if pov.price %}${{ "%.2f"|format(pov.price) }}{% else %}-{% endif %}</td>
+                            <td>{% if pov.deal_amount %}${{ "%.2f"|format(pov.deal_amount) }}{% else %}-{% endif %}</td>
                             <td class="text-center">
                                 {% if pov.roadblocks %}
                                     {% if pov.overcome_roadblocks %}

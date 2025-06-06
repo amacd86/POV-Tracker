@@ -9,7 +9,7 @@
     <div class="card-header">
         <div class="row align-items-center">
             <div class="col">
-                <h5 class="mb-0">{{ pov.customer_name }}</h5>
+                <h5 class="mb-0">{{ pov.deal_name }}</h5>
             </div>
             <div class="col-auto">
                 <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-primary">
@@ -29,7 +29,7 @@
                 <h6 class="border-bottom pb-2 mb-3">POV Details</h6>
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <p class="mb-1"><strong>Customer:</strong> {{ pov.customer_name }}</p>
+                        <p class="mb-1"><strong>Deal Name:</strong> {{ pov.deal_name }}</p>
                         <p class="mb-1"><strong>Assigned SE:</strong> {{ pov.assigned_se }}</p>
                         <p class="mb-1"><strong>Assigned AE:</strong> {{ pov.assigned_ae }}</p>
                         <p class="mb-1"><strong>Start Date:</strong> {{ pov.start_date.strftime('%m/%d/%Y') }}</p>
@@ -73,7 +73,7 @@
                         </p>
                         <p class="mb-1"><strong>Created:</strong> {{ pov.created_at.strftime('%m/%d/%Y %H:%M') }}</p>
                         <p class="mb-1"><strong>Updated:</strong> {{ pov.updated_at.strftime('%m/%d/%Y %H:%M') }}</p>
-                        <p class="mb-1"><strong>Price:</strong> {% if pov.price %}${{ "%.2f"|format(pov.price) }}{% else %}-{% endif %}</p>
+                        <p class="mb-1"><strong>Deal Amount:</strong> {% if pov.deal_amount %}${{ "%.2f"|format(pov.deal_amount) }}{% else %}-{% endif %}</p>
                     </div>
                 </div>
 
