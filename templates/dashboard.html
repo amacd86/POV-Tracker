@@ -119,6 +119,7 @@
                     <thead>
                         <tr>
                             <th><input type="checkbox" id="select-all-checkbox"></th>
+                            <th>Deal Name</th>
                             <th>Customer</th>
                             <th>SE</th>
                             <th>AE</th>
@@ -128,7 +129,6 @@
                             <th>Status</th>
                             <th>Price ($)</th>
                             <th>RB Resolved</th>
-                            <th>Deal Name</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
@@ -138,6 +138,7 @@
                             <td>
                                 <input type="checkbox" name="selected_povs" value="{{ pov.id }}" class="pov-checkbox">
                             </td>
+                            <td>{{ pov.deal_name }}</td>
                             <td>{{ pov.customer_name }}</td>
                             <td>{{ pov.assigned_se }}</td>
                             <td>{{ pov.assigned_ae }}</td>
