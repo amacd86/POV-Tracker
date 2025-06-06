@@ -155,10 +155,11 @@
                             <td>{{ pov.projected_end_date.strftime('%m/%d/%Y') }}</td>
                             <td>
                                 <span class="badge
-                                    {% if pov.status == 'Active' %}bg-success
-                                    {% elif pov.status == 'On Hold' %}bg-warning
-                                    {% elif pov.status == 'Closed - Won' %}bg-primary
-                                    {% elif pov.status == 'Closed - Lost' %}bg-danger
+                                    {% if pov.status == 'In Trial' %}bg-primary text-white
+                                    {% elif pov.status == 'Pending Sales' %}bg-secondary text-white  
+                                    {% elif pov.status == 'Closed Won' %}bg-success text-white
+                                    {% elif pov.status == 'Closed Lost' %}bg-danger text-white
+                                    {% elif pov.status == 'On Hold' %}bg-warning text-dark
                                     {% endif %}">
                                     {{ pov.status }}
                                 </span>
