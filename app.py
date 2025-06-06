@@ -542,12 +542,12 @@ def analytics():
         # Get current date
         today = datetime.now().date()
         
-        # Count POVs by status - fix field names to match imported data
+        # Count POVs by status - use EXACT values from database
         try:
             status_counts = db.session.query(
                 POV.status, func.count(POV.id)
             ).filter_by(deleted=False).group_by(POV.status).all()
-            print(f"Debug - Status counts: {status_counts}")  # Debug line
+            print(f"Debug - Status counts: {status_counts}")
         except Exception as e:
             print(f"Error in status counts: {e}")
             status_counts = []
@@ -556,12 +556,14 @@ def analytics():
         status_labels = [status for status, _ in status_counts]
         status_data = [count for _, count in status_counts]
         
-        # Count POVs by stage - fix to use In Trial instead of Active
+        # Count POVs by stage - for ACTIVE POVs use "In Trial" and "Pending Sales"
         try:
             stage_counts = db.session.query(
                 POV.current_stage, func.count(POV.id)
-            ).filter_by(deleted=False).filter(POV.status.in_(['In Trial', 'Pending Sales'])).group_by(POV.current_stage).all()
-            print(f"Debug - Stage counts: {stage_counts}")  # Debug line
+            ).filter_by(deleted=False).filter(
+                POV.status.in_(['In Trial', 'Pending Sales'])
+            ).group_by(POV.current_stage).all()
+            print(f"Debug - Stage counts: {stage_counts}")
         except Exception as e:
             print(f"Error in stage counts: {e}")
             stage_counts = []
@@ -569,12 +571,14 @@ def analytics():
         stage_labels = [stage for stage, _ in stage_counts]
         stage_data = [count for _, count in stage_counts]
         
-        # Count active POVs by SE - fix status names
+        # Count POVs by SE - for ACTIVE POVs
         try:
             se_counts = db.session.query(
                 POV.assigned_se, func.count(POV.id)
-            ).filter_by(deleted=False).filter(POV.status.in_(['In Trial', 'Pending Sales'])).group_by(POV.assigned_se).all()
-            print(f"Debug - SE counts: {se_counts}")  # Debug line
+            ).filter_by(deleted=False).filter(
+                POV.status.in_(['In Trial', 'Pending Sales'])
+            ).group_by(POV.assigned_se).all()
+            print(f"Debug - SE counts: {se_counts}")
         except Exception as e:
             print(f"Error in SE counts: {e}")
             se_counts = []
@@ -605,7 +609,7 @@ def analytics():
             durations = [(pov.projected_end_date - pov.start_date).days for pov in active_povs if pov.projected_end_date and pov.start_date]
             avg_duration = sum(durations) / len(durations) if durations else 0
             
-            # Fix total value calculation - use deal_amount not price
+            # Total value for active POVs
             total_value = db.session.query(func.sum(POV.deal_amount)).filter(
                 POV.deleted == False,
                 POV.status.in_(['In Trial', 'Pending Sales'])
@@ -631,7 +635,7 @@ def analytics():
             print(f"Error calculating metrics: {e}")
             ending_soon = overdue = avg_duration = total_value = won_count = lost_count = 0
         
-        # Monthly POV starts - let's get real data
+        # Monthly POV starts
         try:
             monthly_data = []
             monthly_labels = []
@@ -651,13 +655,13 @@ def analytics():
         except Exception as e:
             print(f"Error in monthly data: {e}")
             monthly_labels = ['6 months ago', '5 months ago', '4 months ago', '3 months ago', '2 months ago', 'Last month']
-            monthly_data = [1, 2, 3, 2, 4, 3]  # Fallback sample data
-
+            monthly_data = [1, 2, 3, 2, 4, 3]
+        
         # Debug: Print what we're sending to template
         print(f"Sending to template - status_labels: {status_labels}, status_data: {status_data}")
         print(f"Sending to template - stage_labels: {stage_labels}, stage_data: {stage_data}")
         print(f"Sending to template - se_labels: {se_labels}, se_data: {se_data}")
-
+        
         return render_template(
             'analytics.html',
             status_labels=status_labels,
