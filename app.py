@@ -542,83 +542,116 @@ def analytics():
         # Get current date
         today = datetime.now().date()
         
-        # Count POVs by status with error handling
+        # Count POVs by status - fix field names to match imported data
         try:
             status_counts = db.session.query(
                 POV.status, func.count(POV.id)
             ).filter_by(deleted=False).group_by(POV.status).all()
-        except:
+            print(f"Debug - Status counts: {status_counts}")  # Debug line
+        except Exception as e:
+            print(f"Error in status counts: {e}")
             status_counts = []
         
         # Format for chart
         status_labels = [status for status, _ in status_counts]
         status_data = [count for _, count in status_counts]
         
-        # Count POVs by stage
+        # Count POVs by stage - fix to use In Trial instead of Active
         try:
             stage_counts = db.session.query(
                 POV.current_stage, func.count(POV.id)
-            ).filter_by(deleted=False, status='Active').group_by(POV.current_stage).all()
-        except:
+            ).filter_by(deleted=False).filter(POV.status.in_(['In Trial', 'Pending Sales'])).group_by(POV.current_stage).all()
+            print(f"Debug - Stage counts: {stage_counts}")  # Debug line
+        except Exception as e:
+            print(f"Error in stage counts: {e}")
             stage_counts = []
         
         stage_labels = [stage for stage, _ in stage_counts]
         stage_data = [count for _, count in stage_counts]
         
-        # Count active POVs by SE
+        # Count active POVs by SE - fix status names
         try:
             se_counts = db.session.query(
                 POV.assigned_se, func.count(POV.id)
-            ).filter_by(deleted=False, status='Active').group_by(POV.assigned_se).all()
-        except:
+            ).filter_by(deleted=False).filter(POV.status.in_(['In Trial', 'Pending Sales'])).group_by(POV.assigned_se).all()
+            print(f"Debug - SE counts: {se_counts}")  # Debug line
+        except Exception as e:
+            print(f"Error in SE counts: {e}")
             se_counts = []
         
         se_labels = [se for se, _ in se_counts]
         se_data = [count for _, count in se_counts]
         
-        # Calculate metrics with error handling
+        # Calculate metrics with CORRECT status names
         try:
             two_weeks_from_now = today + timedelta(days=14)
             ending_soon = POV.query.filter(
                 POV.deleted == False,
-                POV.status == 'Active',
+                POV.status.in_(['In Trial', 'Pending Sales']),
                 POV.projected_end_date.between(today, two_weeks_from_now)
             ).count()
             
             overdue = POV.query.filter(
                 POV.deleted == False,
-                POV.status == 'Active',
+                POV.status.in_(['In Trial', 'Pending Sales']),
                 POV.projected_end_date < today
             ).count()
             
-            active_povs = POV.query.filter_by(deleted=False, status='Active').all()
-            durations = [(pov.projected_end_date - pov.start_date).days for pov in active_povs]
+            active_povs = POV.query.filter(
+                POV.deleted == False,
+                POV.status.in_(['In Trial', 'Pending Sales'])
+            ).all()
+            
+            durations = [(pov.projected_end_date - pov.start_date).days for pov in active_povs if pov.projected_end_date and pov.start_date]
             avg_duration = sum(durations) / len(durations) if durations else 0
             
-            total_value = db.session.query(func.sum(POV.deal_amount)).filter_by(
-                deleted=False,
-                status='Active'
+            # Fix total value calculation - use deal_amount not price
+            total_value = db.session.query(func.sum(POV.deal_amount)).filter(
+                POV.deleted == False,
+                POV.status.in_(['In Trial', 'Pending Sales'])
             ).scalar() or 0
             
             ninety_days_ago = today - timedelta(days=90)
             
             won_count = POV.query.filter(
                 POV.deleted == False,
-                POV.status == 'Closed - Won',
+                POV.status == 'Closed Won',
                 POV.updated_at >= ninety_days_ago
             ).count()
             
             lost_count = POV.query.filter(
                 POV.deleted == False,
-                POV.status == 'Closed - Lost',
+                POV.status == 'Closed Lost',
                 POV.updated_at >= ninety_days_ago
             ).count()
-        except:
+            
+            print(f"Debug - Metrics: ending_soon={ending_soon}, overdue={overdue}, avg_duration={avg_duration}, total_value={total_value}, won={won_count}, lost={lost_count}")
+            
+        except Exception as e:
+            print(f"Error calculating metrics: {e}")
             ending_soon = overdue = avg_duration = total_value = won_count = lost_count = 0
         
-        # Monthly POV starts - simplified for error handling
-        months = ['6 months ago', '5 months ago', '4 months ago', '3 months ago', '2 months ago', 'Last month']
-        month_data = [1, 2, 3, 2, 4, 3]  # Sample data - you can enhance this later
+        # Monthly POV starts - let's get real data
+        try:
+            monthly_data = []
+            monthly_labels = []
+            for i in range(6, 0, -1):
+                month_start = today.replace(day=1) - timedelta(days=30*i)
+                month_end = (month_start + timedelta(days=32)).replace(day=1) - timedelta(days=1)
+                
+                count = POV.query.filter(
+                    POV.deleted == False,
+                    POV.start_date >= month_start,
+                    POV.start_date <= month_end
+                ).count()
+                
+                monthly_data.append(count)
+                monthly_labels.append(month_start.strftime('%b %Y'))
+            
+        except Exception as e:
+            print(f"Error in monthly data: {e}")
+            monthly_labels = ['6 months ago', '5 months ago', '4 months ago', '3 months ago', '2 months ago', 'Last month']
+            monthly_data = [1, 2, 3, 2, 4, 3]  # Fallback sample data
         
         return render_template(
             'analytics.html',
@@ -634,8 +667,8 @@ def analytics():
             total_value=total_value,
             won_count=won_count,
             lost_count=lost_count,
-            months=months,
-            month_data=month_data
+            months=monthly_labels,
+            month_data=monthly_data
         )
     except Exception as e:
         flash(f'Error loading analytics: {str(e)}', 'danger')
