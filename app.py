@@ -552,9 +552,14 @@ def analytics():
             print(f"Error in status counts: {e}")
             status_counts = []
         
-        # Format for chart
-        status_labels = [status for status, _ in status_counts]
-        status_data = [count for _, count in status_counts]
+        # Format for chart with percentages
+        status_labels = []
+        status_data = []
+        total_povs = sum([count for _, count in status_counts])
+        for status, count in status_counts:
+            percentage = round((count / total_povs) * 100, 1) if total_povs > 0 else 0
+            status_labels.append(f"{status}: {count} ({percentage}%)")
+            status_data.append(count)
         
         # Count POVs by stage - for ACTIVE POVs use "In Trial" and "Pending Sales"
         try:
@@ -586,7 +591,7 @@ def analytics():
         se_labels = [se for se, _ in se_counts]
         se_data = [count for _, count in se_counts]
         
-        # Calculate basic and advanced metrics
+        # Calculate basic metrics and advanced/fixed metrics
         try:
             two_weeks_from_now = today + timedelta(days=14)
             ending_soon = POV.query.filter(
@@ -629,54 +634,67 @@ def analytics():
                 POV.updated_at >= ninety_days_ago
             ).count()
             
-            # NEW ADVANCED METRICS
-            
-            # Technical Wins - POVs with technical_win = 'Yes'
+            # FIXED ADVANCED METRICS - Only count completed POVs
             technical_wins = POV.query.filter(
                 POV.deleted == False,
                 POV.technical_win == 'Yes'
             ).count()
             
-            # POVs in Progress (In Trial + Pending Sales)
             povs_in_progress = POV.query.filter(
                 POV.deleted == False,
                 POV.status.in_(['In Trial', 'Pending Sales'])
             ).count()
             
-            # Total POVs ever (for conversion calculations)
-            total_povs_ever = POV.query.filter(POV.deleted == False).count()
+            # Only completed POVs for conversion calculations
+            completed_povs = POV.query.filter(
+                POV.deleted == False,
+                POV.status.in_(['Closed Won', 'Closed Lost'])
+            ).count()
             
-            # Total Closed Won ever
             total_closed_won = POV.query.filter(
                 POV.deleted == False,
                 POV.status == 'Closed Won'
             ).count()
             
-            # POV to Closed Won Conversion Rate
-            pov_conversion_rate = round((total_closed_won / total_povs_ever) * 100, 1) if total_povs_ever > 0 else 0
+            # POV to Closed Won Conversion Rate (only completed POVs)
+            pov_conversion_rate = round((total_closed_won / completed_povs) * 100, 1) if completed_povs > 0 else 0
             
-            # Technical Win Rate (Technical Wins / Total POVs)
-            technical_win_rate = round((technical_wins / total_povs_ever) * 100, 1) if total_povs_ever > 0 else 0
+            # Technical Win Rate (only completed POVs)
+            technical_win_rate = round((technical_wins / completed_povs) * 100, 1) if completed_povs > 0 else 0
             
-            # Technical Loss Count
-            technical_losses = POV.query.filter(
+            # STAGE COUNTS for new metric cards
+            deployment_count = POV.query.filter(
                 POV.deleted == False,
-                POV.technical_win == 'No'
+                POV.current_stage == 'Deployment',
+                POV.status.in_(['In Trial', 'Pending Sales'])
             ).count()
             
-            # Technical Loss Rate
-            technical_loss_rate = round((technical_losses / total_povs_ever) * 100, 1) if total_povs_ever > 0 else 0
+            training1_count = POV.query.filter(
+                POV.deleted == False,
+                POV.current_stage == 'Training 1',
+                POV.status.in_(['In Trial', 'Pending Sales'])
+            ).count()
             
-            # POV Still Pending Rate (In Trial + Pending Sales / Total)
-            pov_pending_rate = round((povs_in_progress / total_povs_ever) * 100, 1) if total_povs_ever > 0 else 0
+            training2_count = POV.query.filter(
+                POV.deleted == False,
+                POV.current_stage == 'Training 2',
+                POV.status.in_(['In Trial', 'Pending Sales'])
+            ).count()
             
-            print(f"Debug - Advanced Metrics: tech_wins={technical_wins}, pov_conversion={pov_conversion_rate}%, tech_win_rate={technical_win_rate}%, povs_in_progress={povs_in_progress}")
+            wrapup_count = POV.query.filter(
+                POV.deleted == False,
+                POV.current_stage == 'POV Wrap-Up',
+                POV.status.in_(['In Trial', 'Pending Sales'])
+            ).count()
+            
+            print(f"Debug - Fixed Metrics: pov_conversion={pov_conversion_rate}% (was including pending), tech_win_rate={technical_win_rate}%")
+            print(f"Debug - Stage Counts: deployment={deployment_count}, training1={training1_count}, training2={training2_count}, wrapup={wrapup_count}")
             
         except Exception as e:
             print(f"Error calculating metrics: {e}")
             ending_soon = overdue = avg_duration = total_value = won_count = lost_count = 0
             technical_wins = pov_conversion_rate = technical_win_rate = povs_in_progress = 0
-            technical_losses = technical_loss_rate = pov_pending_rate = 0
+            deployment_count = training1_count = training2_count = wrapup_count = 0
         
         # Monthly POV starts
         try:
@@ -700,10 +718,6 @@ def analytics():
             monthly_labels = ['6 months ago', '5 months ago', '4 months ago', '3 months ago', '2 months ago', 'Last month']
             monthly_data = [1, 2, 3, 2, 4, 3]
         
-        # Debug: Print what we're sending to template
-        print(f"Sending to template - status_labels: {status_labels}, status_data: {status_data}")
-        print(f"Sending advanced metrics - tech_wins: {technical_wins}, conversion_rate: {pov_conversion_rate}")
-        
         return render_template(
             'analytics.html',
             status_labels=status_labels,
@@ -720,14 +734,16 @@ def analytics():
             lost_count=lost_count,
             months=monthly_labels,
             month_data=monthly_data,
-            # NEW ADVANCED METRICS
+            # FIXED ADVANCED METRICS
             technical_wins=technical_wins,
             pov_conversion_rate=pov_conversion_rate,
             technical_win_rate=technical_win_rate,
             povs_in_progress=povs_in_progress,
-            technical_losses=technical_losses,
-            technical_loss_rate=technical_loss_rate,
-            pov_pending_rate=pov_pending_rate
+            # NEW STAGE COUNT METRICS
+            deployment_count=deployment_count,
+            training1_count=training1_count,
+            training2_count=training2_count,
+            wrapup_count=wrapup_count
         )
     except Exception as e:
         flash(f'Error loading analytics: {str(e)}', 'danger')

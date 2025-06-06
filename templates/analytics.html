@@ -107,7 +107,45 @@
     </div>
 </div>
 
-
+<!-- Third Row: Stage Count Metrics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm bg-primary text-white">
+            <div class="card-body">
+                <h6 class="card-title">Deployment</h6>
+                <h2 class="mb-0">{{ deployment_count }}</h2>
+                <p class="card-text small">Active POVs in deployment</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm bg-info text-white">
+            <div class="card-body">
+                <h6 class="card-title">Training 1</h6>
+                <h2 class="mb-0">{{ training1_count }}</h2>
+                <p class="card-text small">Active POVs in training 1</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm bg-warning text-dark">
+            <div class="card-body">
+                <h6 class="card-title">Training 2</h6>
+                <h2 class="mb-0">{{ training2_count }}</h2>
+                <p class="card-text small">Active POVs in training 2</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm bg-success text-white">
+            <div class="card-body">
+                <h6 class="card-title">POV Wrap-Up</h6>
+                <h2 class="mb-0">{{ wrapup_count }}</h2>
+                <p class="card-text small">Active POVs in wrap-up</p>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Charts -->
 <div class="row mb-4">
