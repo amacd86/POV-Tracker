@@ -1,0 +1,140 @@
+,Amount,Success Criteria,POV Stage,Technical Win,Roadblocks,Roadblock Removed,Win/Loss,Reason,Account Executive,Sales Engineer,POV Start Date,POV Complete Date,Close Date
+Enterprise Properties ," $26,987.00 ",,Completed,Yes,,N/A,Closed Won,"Better pricing, visibility",Rob Lynch,Angus MacDonald,3/26/2025,4/10/2025,
+Mississippi Dept of Banking and Consumer," $35,256.00 ","5/21 just said they are moving ahead with adlumin, 
+andrew gross to get them new quote with new howard rep ",Completed,Yes,"Required to POV other solutions, extending trial to 5/15. In process of POV'ing other solutions, leaving POV on to stay in front of prospect. UPDATE from Andrew: They are still trying to do a POV with ecentire but having trouble with terms. AW is getting on their nerves by keep bugging them so the Howard rep feels we are in a really good spot. I am seeing them next week in person in Jackson MS. HAVE VERBAL COMMIT FOR JUNE",,Pending Sales,,Andrew Gross,Angus MacDonald,3/17/2025,4/3/2025,
+Critical Project Services," $86,895.00 ","1)  Automation - Detect and response, but includes automatic remmediation
+2)  Risk mitigation through visibility.  More visibility and understanding of what is going on in the environment. ",Completed,Yes,"Conroy is unsure what he wants. Doesn't know incumbent pricing.  "" Joe states trial is complete and in review"".  never escalated to decision maker - working two levels down. Have admited they like Adlumin - hopping on a call with Paul and Ben Tuesday 4/15 with Conroy - CODY STATES PO IN PROCESS
+* 5/22: They want Patching, but want  control over the patching platform.",,Pending Sales,,Cody Morgan,Colin Scott,3/7/2025,4/10/2025,
+Royal Farms Eplus MDR," $158,000.00 ","1) Current SIEM is not very proactive and just checking compliance boxes - want to move into this century when it comes to cybersecurity with more visbility and log sources being analyzed2) MSSP (SageNet aka Mazars) currently manages their S1 EDR, SIEM/SOC, and Fortinet without very much visibility3) PCI compliance audits are a concern",Completed,Yes,"1) Can Adlumin truly aggregate all logs / data in a single pane of glass and deploy within 90 minutes? - major concern is uplift to switch providers.2) Will Adlumin be able to save the team time and help with compliance. 3) Would like to see how Adlumin’s SOC interacts with them - want it to be hands-off for Jake / Jesse. Visibility, PCI, deployment time, save time w compliance, SOC interactions. Pricing was an issue - melissa went back for betting pricing to stay competitive. a report for FIM PCI compliance was also a technical hurtle. Created a custom report and emailed prospect explaining we have this for them. ",Yes,Closed Won,"Melissa got better pricing, created custom FIM report to meet their success criteria and remove their roadblocks",Melissa Pearson,Angus MacDonald,3/20/2025,4/24/2025,
+Mental Health America of Los Angeles," $55,880.00 ","1) Simplicity
+2) Quick install and breadth of coverage
+3) Historic tracking of security events
+4) SIEM",Completed,Yes,"Team keeps pushing out the field posts; asking to try things in the platform, only to have 'not gotten to it' at the next POV wrap-up call.  UPDATED: Waiting on budget approval. CFO put on hold for 2 weeks due to budget issues and building changes. Price is a huge factor - threat locker is cheaper - need a big gun to come in and tell them they are wrong",No,Pending Sales,,Cody Morgan,Colin Scott,2/25/2025,4/3/2025,
+St. Paul's Senior Services," $23,092.00 ","1) EX: HIPAA compliance, secuirty hardening, cost reduction, ransomware. 
+2) Ease of use
+3) SOAR Functionality",Completed,No,"They want more SOAR capabilities than we offer ((Firewall / API's, etc.)). They are comparing us to Sentinel, and we are losing. They see our product as 'too quiet', where as Sentinel is very noisy. Had a security sync with Kevin O'Connor on how we detect. Customer is concerned about what we detect on. Ryan let him know we're shutting down or moving forward. Beat out R7 and Sophos - CS was a last minute option. Went Dark",,Closed Lost,Visually what they are looking for. ,Cody Morgan,Colin Scott,3/31/2025,4/18/2025,
+Bonneville Joint SD MDR," $29,516.00 ",N/a,Completed,Yes,states they are going with AW. Adlumin was generating too many alerts. Paul W. Farshad and Ben did not see alert fatigue during the POV. Was never brought up during POV,No,Closed Lost,,Farshad Seihoun,Colin Scott,3/18/2025,4/2/2025,
+Robbinsville School District," $41,455.00 ","1) Automation - Detect and response, but includes automatic remmediation.
+2) Risk mitigation through visibility.  More visibility and understanding of what is going on in the environment.",Completed,Yes,Waiting on FY 7/1 to close deal,,Pending Sales,"Loves that it does the detections for Google, since they're not really getting that now (they can't block users with their Google licensings). No PO until July 1. ",Tim Lake,Colin Scott,3/31/2025,4/25/2025,
+City of Newark," $393,601.00 ","pci, hipaa, cjis, late filling out compliance in past
+team call w will/hilda. Chris burris, michawl wells, rich m, kevin o, ben, Edwin and JJ love the platform- 
+**CVM and Pen test POVs?
+*6/2/25- CVM POV ticket for 6/10, https://n-able.atlassian.net/browse/POV-44 ",Completed,Yes,"waiting on budget numbers, testing LuMu and Cisco XDR - CVM POV, Scheduling a lunch meeting with john Paggs and tabletop excersize ",,Pending Sales,"*POV wrap up on 5/9 in good place, 
+*5/28 - Cory reached out this week to do CVM POV, 
+no answer yet, but meeting sched for now 6/4",Cory Duplease,Angus MacDonald,1/23/2025,2/6/2025,
+Lyons Magnus," $56,287.00 ","1) Simplicity
+2) Better functionality of Rapid7
+3) SOAR Functionality",Completed,Yes,"Waiting for approval from client, CFO pushing tech champ to consider CS. Shows Closed Lost in HS but Ryan says it's not lost yet - pushed for a decision in May. Approval will be a month-ish out. Need to convince CFO for us against CS. gone dark",,Closed Lost,Never heard back from ,Cody Morgan,Colin Scott,3/6/2025,3/25/2025,
+AllOne Health ," $48,138.00 ",,Completed,Yes,They want to buy. Call ran over... Need additional call to review pricing.  They may want to bundle in Mail Assure. 3 - 4 agents deployed. ,,Pending Sales,"""Everything just works"". ",Melissa Pearson,Colin Scott,3/24/2025,4/23/2025,
+MacroGenics Inc," $35,585.00 ","beat AW, focus is on imporving level of detection response and analystics, visibility, response manual and automated vs AW,",Completed,Yes,"want to get in front of customer to talk over. seeing better summary of events, AW renewal mid July, decsion mid may, ransomware and IR big differentiators, POV wrap up 4/17",,Pending Sales,stated in email they will be purchasing,Cory Duplease,Angus MacDonald,3/19/2025,4/17/2025,
+Wilkinson Barker Knauer," $28,670.00 ","vs Arctic Wolf, visibility, 
+5/19- Benito no show on CVM call, told cory agents for cvm were gone but was looking at wrong tenant
+5/20- cvm results call - Angus jumping onto to ensure smooth",Completed,Yes,"no reason not to buy, need to finish CVM POV and wrap up. -impressed with the analysis the events - Had an issue with CVM POV, CVM team was late for the meeting. 
+
+-most useful alert he has gotten with 11 years in field from any vendor
+
+-like pricing
+
+-way easier to use than AW
+
+-no reason not to buy
+
+-AW called 4 times this week but we are not going with them - Harold
+
+-going with us",,Pending Sales,"*finished CVM pov 5/20
+provided pricing for RMM and they're reviewing that vs what they had. If they like it then they're going to go with both a try and get it done in June. Will know more by Friday 5/30*",Cory Duplease,Angus MacDonald,2/19/2025,4/9/2025,
+Cades Shutte," $38,000.00 ",N/a,Completed,Yes,,,Closed Won,,Ryan O'Malley,Colin Scott,4/2/2025,4/17/2025,
+ThreeRivers," $23,000.00 ","1) Visibility “Single Pane of Glass”
+2) 24/7 Monitoring and Response
+3) Ease of Success
+",Completed,Yes,None at this time. need more time to evaluate but no concerns,,Closed Won,,Rob Lynch,Andrew Wadsworth,4/11/2025,5/1/2025,
+IT Unlimited,"12,000 .00",MSP - Nable\ They are ready to sign the PO and move ethier existing endpoints over to thier the Customer's sub tenant. He just needed an update PO as of our last call. ,Completed,Yes,"Ryan wants to deploy to more customers, But he is ready to buy 50 licenses to get started and increase the number of endpoints as he does so. ""Give me an updated quote and I'll sign it""",N/A,Closed Won,,Matt Johnson,Erik Staley,,,
+Mirage MSP," $10,566.00 ","MSP N-able  Looking for something to help their clients be protected, and manage from a single dashboard/portal. ",Completed,Pending,,,Pending Sales,,Matt Johnson,Colin Scott,,,
+Town of Mooresville,"$56,008 ","Not a full MSP; current setup is fundamental and insufficient.
+
+Vendor Evaluation:
+
+Reviewed 11 vendors, including AlienVault and Sophos.
+
+Previous preference for Splunk (too expensive), dislike for black-box solutions (Proficio, Deepwatch).",Completed,Yes,"MSSP needs to deploy, sen1, mimecast, palo fw before train 1 4/21. No full SIEM or MDR solution—limited visibility and capabilities. UPDATE: Waiting to hear back on verbal. Doing final dudilligence and asking questions. Leadership running POV with Infusion Point. 
+
+Lack of full log correlation and event connection. ",Yes,Pending Sales,"Team confirmed there was no reason not to go with Adlumin, for political reasons in biz they need to do one more POV with a vendor, but the team loves Adlumin, staying ahead of it
+*5/27- confirmed they are running POV w other vendor, keeping our POV running, staying in front of them.. check in meeting in a week or 2 to see how other vendor comparing",Andrew Gross,Angus MacDonald,,,
+Cross River Bank,"$240,356 ","-AW -paying fortune that is mainly just logging events but not doing much action, doesnt know theyre environment
+
+-lack intelligence, risk section of product is so generic, not tailored to our environment, turned off the risk side
+
+-dont feel that they have a managed service that can save them on a bad day
+",Completed,Yes,"technical discussion, -PCI
+
+-been with AW for 5-6 years
+
+-no visibility*
+
+-cost***",,Closed Lost,"Closed lost, team unresponsive in trial, said no time currently to complete POV",Cory Duplease,Angus MacDonald,3/20/2025,4/9/2025,
+Jefferson County ID,"$19,672 ",,Troubleshooting,No,"Sophos issues. 
+5/19: CrowdStrike is messaging them quicker than Adlumin. Simulators taking too long. Crowdstrike replacement. Powershell toolkit test took 22 minutes to notify customer, took 9 minutes for CS. Response time is an issue. 
+* No alert was showing in dashboard from CrowdStrike. 
+* Powershell simulator was not isolating system. ",No,In Trial,"Not impressed with the response time from Adlumin. Putting aside the CrowdStrike issue, not happy with a 22 minute repsonse time for a 'simulator'. ",Farshad Seihoun,Colin Scott,4/22/2025,,
+Boxertek,?,MSP - Nable\ They need somethign they can deploy to thier customers ASAP. They want a clean Interface so they can understand whats going on with thier customer's enviorment,Training 1,Pending,They want to deploy on a prospect of thiers. waitng on them to deploy fully. ,,In Trial,,Matt Johnson,Colin Scott,Erik covering during RSA,,
+Town of New Canaan,"$30,000 ","-darktrace currently 3 years, been noticing false positives, gets annoying
+-hasnt been detecting things correctly 
+-been missing events, brute force",Training 2,Yes,cost,,Pending Sales,"UEBA, plus SOC, - 
+*train 2 sched 5/29",Cory Duplease,Angus MacDonald,,,
+Synergy IT Solutions,"$20,000 ","Jeff Miller sent over- beat AW, ",Training 2,Pending,Connectwise integration,No,In Trial,"Call sched 5/29, kyle cundari assisting w CW",Tim Lake,Angus MacDonald,,,
+Council Rock School District," $86,000.00 ",Demo for BVC,Completed,Yes,no POV ,,Closed Won,,Tom Devoe,Angus MacDonald,,,
+Canton Township," $70,000.00 ",no POV,Completed,Yes,no POV ,,Closed Won,,Rob Lynch,Angus MacDonald,reach out to Kalan for details on this,,
+En4see," $2,400.00 ",MSP N-able\\ We meet with them on 5/29 for a check-in in and they were distracted with other issues. We are still waiting on them to decide which customer they want to deploy endpoints to. Next meeting is on 6/12,Deployment,,,,,,Matt Johnson,Erik Staley,Josh helping with integrations,,
+Brook and Whittle Ltd," $40,000.00 ","“Single Pane of Glass” - Aggregate logs from across all tools we inherited via acquisitions. 
+
+Simplify PCI compliance and Active Directory oversight with centralized log management and actionable insights.
+
+Demonstrate how Adlumin reduces alert fatigue and supports a small IT team through intelligent automation and streamlined SIEM operations.
+",POV Wrap-Up,Yes,prospect needed to update .net framework to install on one of their systems - was resolved. Impacted by outage and lost agents,Yes,Pending Sales,,Melissa Pearson,Josh Bourgeois,5/6/2025,6/5/2025,
+Harbor Foods," $57,952.00 ","1:1 comparison of PA Cortex
+Want SOC response
+Only 3 people on team
+Looking to substidize features for PA Cortex. 
+Ransomeware Prevention",Completed,Yes,"Waiting on Jordan, the decision maker. Was out sick during Training 2 call. ",N/A,Pending Sales,,Cody Morgan,Colin Scott,5/7/2025,,
+Stoke Therapeutics," $35,000.00 ","Beat AW, palo fw ingest, defender/s1
+ integration, agent low util",Completed,Yes,"*train2 5/28 Kicking of S1 trial and prolonged POV
+*going to run sen1 trial, might need extend POV to 
+allow time to eval sen1 in Adlumin, impacted by outage and lost agents, need to update",No,In Trial,,Tom Devoe,Angus MacDonald,,,
+Phenoix Ville School District," $30,000.00 ",NO POV,,,,,Closed Won,,Cory Duplease,Angus MacDonald,,,
+Cape Ann Savings Bank,"$20,000 ","*Be better than incumbent Tyler Tech*
+1.Demonstrate complete visibility across the environment with rich, actionable insights.
+2. Validate that Adlumin delivers meaningful alerts that highlight real threats.
+3. Show that the environment is fully protected with proactive monitoring and automated response.
+
+",Training 2,Pending,"Concerneed with lack of alert ingestion from CrowdStrike. Similar to Jefferson County (ID). 
+CrowdStrike is detecting alerts and they are not showing up in Adlumin.
+They are testing the powershell simulator and not seeing results in the platform.
+Waiting on collector deployment, and syslog from their core banking VMs,and a couple smaller integrations.
+",,In Trial,,Cory Duplease,Andrew Wadsworth,5/21/2025,,
+"Union County, KY","$40,000.00 ","""Trace3 told me this would help with my security gaps"". ",Training 1,,Needed to have Mac OSX agent 'compiled'. ,,In Trial,"Liking what they see so far. 
+Detected unknown accounts (witherspoon_r)",Rob Lynch,Colin Scott,5/21/2025,,
+Benesys,"$100,000.00 ","* Not happy with AW
+* Looking for a solution that combines SIEM
+* Solution that is budget friendly. 
+* Compliance",Training 2,,5/29: Rescheduled Training 1 due to not being fully deployed,,In Trial,,Andy Bombach,Colin Scott,5/20/2025,,
+Huron Regional Medical Centers,"$62,869.65 ","SIEM
+Response",Training 1,,,,In Trial,,Andy Bombach,Colin Scott,5/22/2025,,
+Madison County,"$15,000.00 ",Wanting to have all logs in a single location (SIEM),POV Wrap-Up,,"5/29: They want to trial the Simulator Tools (delaying). 
+6/5: They do not have any alerts after 2 weeks.",,In Trial,"If they actually receive an alert, they can see value in the SOC. ",Farshad Seihoun,Colin Scott,5/22/2025,,
+State of Utah Courts,"$23,037.92 ",,Training 2,,,,In Trial,,Farshad Seihoun,Erik Staley,5/23/2025,,
+CPCyber,??,"MSP, they were not ready to deploy when we last meet with them on 5/27",Deployment,,Holding off on Deployment until colleage can investigate the integration parts. ,,In Trial,,Matt Johnson,Erik Staley,5/27/2025,,
+Southwest Transplant Alliance,"$41,325.23 ",HIPAA,Deployment,,,,In Trial,,Cody Morgan,Colin Scott,6/3/2025,,
+Campbell Scientific,"$57,988.00 ",,Deployment,,,,In Trial,,Cody Morgan,Colin Scott,6/13/2025,,
+Thayer Mahan," $44,191.00 ",no pov,Completed,,,,Closed Won,,Cory Duplease,Angus MacDonald,,,5/20/2025
+Basswood," $11,000.00 ",Needs to see how we consolidate tools for them and make the data actionable. Wants to test CVM as well,Training 2,Pending,Windows Collector. ,Yes,In Trial,,Tim Lake,Josh Bourgeois,5/28/2025,,
+Gaylord Specialty Healthcare,"42,000",win over new CIO,Deployment,Pending,,,,"*deployment sched 5/27, rescheduled",Tom Devoe,Angus MacDonald,5/27/2025,,
+Cujo AI," $35,000.00 "," They have AlienVault and are very unhappy with their support and issues with sensors; they want to see something better, and that just works. Testing Tenable and Entra ID, CVM is on the table too. ",Training 1,,They want to review the SOC 2 report before deploying Azure integration. ,,In Trial,,Cody Morgan,Erik Staley,,,
+SIMEN,,,,,,,,,Cody Morgan,,,,
+Utah County," 
+$70,741.80 ",Deal which was previously in progress,Completed,Yes,,,Closed Won,,Farshad Seihoun,Colin Scott,3/3/2025,4/1/2025,5/30/2025
+Maury Microwave,,,Deployment,,,,Closed Won,,Cody Morgan,Andrew Wadsworth,,,
+Breckenridge Grand Vacations LLC,"$44,000.00 ",,Training 1,,,,In Trial,,Andy Bombach,Colin Scott,6/3/2025,,
+Denver Employees Retirement Plan,"$11,246 ","Needing a full suite at an affordable deal. 
+Needs Incident Response. ",Training 1,,,,In Trial,,Cody Morgan,Colin Scott,6/5/2025,,
+Bowhead,"$50,000.00 ",Want to see if CrowdStrike is missing anything that would help add to their overall security stack. ,Training 1,,,,In Trial,,Tim Lake,Colin Scott,6/5/2025,,
+5c Investments,"$22,801.00 ",Will need to dig into this on next call. Was asked to keep it 100% about deployment and technical by sales team. ,Deployment,,No virualazation cabability internally.,Yes,In Trial,,Tim Lake,Josh Bourgeois,6/4/2025,,
