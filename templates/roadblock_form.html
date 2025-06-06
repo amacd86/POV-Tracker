@@ -1,0 +1,314 @@
+<div class="roadblock-form-container">
+    <div class="form-header">
+        <h2>Manage Roadblock - {{ pov.company_name }}</h2>
+        <div class="pov-info">
+            <span class="stage">{{ pov.stage }}</span>
+            <span class="status status-{{ pov.status.lower().replace(' ', '-') }}">{{ pov.status }}</span>
+        </div>
+    </div>
+
+    {% if pov.roadblock_category %}
+    <div class="current-roadblock-info">
+        <h3>Current Roadblock Status</h3>
+        <div class="roadblock-summary">
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <label>Category:</label>
+                    <span class="category-tag category-{{ pov.roadblock_category.lower().replace(' ', '-') }}">
+                        {{ pov.roadblock_category }}
+                    </span>
+                </div>
+                <div class="summary-item">
+                    <label>Severity:</label>
+                    <span class="severity-badge severity-{{ pov.roadblock_severity.lower() }}">
+                        {{ pov.roadblock_severity }}
+                    </span>
+                </div>
+                <div class="summary-item">
+                    <label>Owner:</label>
+                    <span class="owner-tag">{{ pov.roadblock_owner }}</span>
+                </div>
+                <div class="summary-item">
+                    <label>Days Stagnant:</label>
+                    <span class="stagnant-days {% if pov.days_stagnant > 14 %}critical{% elif pov.days_stagnant > 7 %}warning{% endif %}">
+                        {{ pov.days_stagnant }} days
+                    </span>
+                </div>
+            </div>
+            
+            {% if pov.roadblock_notes %}
+            <div class="current-notes">
+                <label>Current Notes:</label>
+                <p>{{ pov.roadblock_notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="POST" class="roadblock-form">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="roadblock_category">Roadblock Category *</label>
+                <select name="roadblock_category" id="roadblock_category" required>
+                    <option value="">Select Category</option>
+                    <option value="Technical" {% if pov.roadblock_category == 'Technical' %}selected{% endif %}>
+                        🔧 Technical
+                    </option>
+                    <option value="Budget" {% if pov.roadblock_category == 'Budget' %}selected{% endif %}>
+                        💰 Budget
+                    </option>
+                    <option value="Timeline" {% if pov.roadblock_category == 'Timeline' %}selected{% endif %}>
+                        ⏰ Timeline
+                    </option>
+                    <option value="Decision Maker" {% if pov.roadblock_category == 'Decision Maker' %}selected{% endif %}>
+                        👥 Decision Maker
+                    </option>
+                    <option value="Competitive" {% if pov.roadblock_category == 'Competitive' %}selected{% endif %}>
+                        ⚔️ Competitive
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="roadblock_severity">Severity *</label>
+                <select name="roadblock_severity" id="roadblock_severity" required>
+                    <option value="">Select Severity</option>
+                    <option value="Low" {% if pov.roadblock_severity == 'Low' %}selected{% endif %}>
+                        🟢 Low
+                    </option>
+                    <option value="Medium" {% if pov.roadblock_severity == 'Medium' %}selected{% endif %}>
+                        🟡 Medium
+                    </option>
+                    <option value="High" {% if pov.roadblock_severity == 'High' %}selected{% endif %}>
+                        🔴 High
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="roadblock_owner">Roadblock Owner *</label>
+                <select name="roadblock_owner" id="roadblock_owner" required>
+                    <option value="">Who's responsible?</option>
+                    <option value="AE" {% if pov.roadblock_owner == 'AE' %}selected{% endif %}>
+                        👔 AE (Account Executive)
+                    </option>
+                    <option value="SE" {% if pov.roadblock_owner == 'SE' %}selected{% endif %}>
+                        🛠️ SE (Sales Engineer)
+                    </option>
+                    <option value="Leadership" {% if pov.roadblock_owner == 'Leadership' %}selected{% endif %}>
+                        👑 Leadership
+                    </option>
+                    <option value="Engineering" {% if pov.roadblock_owner == 'Engineering' %}selected{% endif %}>
+                        ⚙️ Engineering
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="roadblock_notes">Roadblock Notes</label>
+            <textarea name="roadblock_notes" id="roadblock_notes" rows="4" 
+                      placeholder="Describe the roadblock, steps taken, next actions...">{{ pov.roadblock_notes or '' }}</textarea>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                {% if pov.roadblock_category %}Update Roadblock{% else %}Add Roadblock{% endif %}
+            </button>
+            
+            {% if pov.roadblock_category and not pov.roadblock_resolved_date %}
+            <button type="submit" name="action" value="resolve" class="btn btn-success">
+                ✅ Mark Resolved
+            </button>
+            {% endif %}
+            
+            {% if pov.roadblock_resolved_date %}
+            <button type="submit" name="action" value="reopen" class="btn btn-warning">
+                🔄 Reopen Roadblock
+            </button>
+            {% endif %}
+            
+            <a href="{{ url_for('pov_detail', id=pov.id) }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.roadblock-form-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+}
+
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.form-header h2 {
+    margin: 0;
+    color: #333;
+}
+
+.pov-info {
+    display: flex;
+    gap: 10px;
+}
+
+.stage, .status {
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.stage {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.current-roadblock-info {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-left: 4px solid #dc3545;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.summary-item label {
+    font-weight: 600;
+    color: #666;
+}
+
+.category-tag {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    background: #e7f3ff;
+    color: #0066cc;
+}
+
+.severity-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.severity-high { background: #ffebee; color: #c62828; }
+.severity-medium { background: #fff8e1; color: #f57f17; }
+.severity-low { background: #e8f5e8; color: #2e7d32; }
+
+.owner-tag {
+    background: #f0f0f0;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+}
+
+.stagnant-days {
+    font-weight: 600;
+}
+
+.stagnant-days.warning { color: #f57f17; }
+.stagnant-days.critical { color: #c62828; }
+
+.roadblock-form {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.form-group select,
+.form-group textarea {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn-primary { background: #007bff; color: white; }
+.btn-success { background: #28a745; color: white; }
+.btn-warning { background: #ffc107; color: #212529; }
+.btn-secondary { background: #6c757d; color: white; }
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>

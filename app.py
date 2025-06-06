@@ -48,11 +48,25 @@ class POV(db.Model):
     deleted = db.Column(db.Boolean, default=False)
     deleted_at = db.Column(db.DateTime)
 
+    # Enhanced Roadblock Fields
+    roadblock_category = db.Column(db.String(50))  # Technical, Budget, Timeline, Decision Maker, Competitive
+    roadblock_severity = db.Column(db.String(10))  # High, Medium, Low
+    roadblock_owner = db.Column(db.String(20))     # AE, SE, Leadership, Engineering
+    roadblock_notes = db.Column(db.Text)
+    roadblock_created_date = db.Column(db.Date, default=datetime.utcnow)
+    roadblock_resolved_date = db.Column(db.Date)
+
     # Relationship
     notes = db.relationship('Note', backref='pov', lazy=True, cascade='all, delete-orphan')
 
     def __repr__(self):
         return f"POV('{self.deal_name}', '{self.current_stage}', '{self.status}')"
+
+    @property
+    def days_stagnant(self):
+        if self.roadblock_created_date and not self.roadblock_resolved_date:
+            return (datetime.utcnow().date() - self.roadblock_created_date).days
+        return 0
 
 class Note(db.Model):
     __tablename__ = 'notes'
@@ -121,9 +135,115 @@ def init_db():
             print(f"Error initializing database: {e}")
             return False
 
+def get_pov_metrics():
+    """
+    Calculate POV metrics with corrected logic:
+    - Only count completed POVs (Closed Won + Closed Lost) for conversion rates
+    - Exclude pending/in-progress POVs from rate calculations
+    """
+    # Get completed POVs only (excludes pending/in-progress)
+    completed_povs = POV.query.filter(
+        POV.deleted == False,
+        POV.status.in_(['Closed Won', 'Closed Lost'])
+    ).count()
+
+    # Get won POVs
+    closed_won_count = POV.query.filter(
+        POV.deleted == False, 
+        POV.status == 'Closed Won'
+    ).count()
+
+    # Get lost POVs
+    closed_lost_count = POV.query.filter(
+        POV.deleted == False,
+        POV.status == 'Closed Lost'
+    ).count()
+
+    # Get technical wins (assuming you have a technical_win boolean field or 'Yes' string)
+    technical_wins = POV.query.filter(
+        POV.deleted == False,
+        ((POV.technical_win == True) | (POV.technical_win == 'Yes')),
+        POV.status.in_(['Closed Won', 'Closed Lost'])
+    ).count()
+
+    # FIXED CALCULATIONS - Only use completed POVs as denominator
+    pov_conversion_rate = (closed_won_count / completed_povs) * 100 if completed_povs > 0 else 0
+    tech_win_rate = (technical_wins / completed_povs) * 100 if completed_povs > 0 else 0
+
+    # Stage counts for new metric cards (for active POVs only)
+    deployment_count = POV.query.filter(
+        POV.deleted == False,
+        POV.current_stage == 'Deployment',
+        POV.status.in_(['In Trial', 'Pending Sales'])
+    ).count()
+
+    training_1_count = POV.query.filter(
+        POV.deleted == False,
+        POV.current_stage == 'Training 1',
+        POV.status.in_(['In Trial', 'Pending Sales'])
+    ).count()
+
+    training_2_count = POV.query.filter(
+        POV.deleted == False,
+        POV.current_stage == 'Training 2',
+        POV.status.in_(['In Trial', 'Pending Sales'])
+    ).count()
+
+    pov_wrap_up_count = POV.query.filter(
+        POV.deleted == False,
+        POV.current_stage == 'POV Wrap-Up',
+        POV.status.in_(['In Trial', 'Pending Sales'])
+    ).count()
+
+    return {
+        'total_povs': POV.query.filter(POV.deleted == False).count(),
+        'completed_povs': completed_povs,
+        'closed_won_count': closed_won_count,
+        'closed_lost_count': closed_lost_count,
+        'technical_wins': technical_wins,
+        'pov_conversion_rate': round(pov_conversion_rate, 1),
+        'tech_win_rate': round(tech_win_rate, 1),
+        'stage_counts': {
+            'deployment': deployment_count,
+            'training_1': training_1_count,
+            'training_2': training_2_count,
+            'pov_wrap_up': pov_wrap_up_count
+        }
+    }
+
 # Routes
 @app.route('/')
 def dashboard():
+    metrics = get_pov_metrics()
+
+    # Get status distribution for pie chart with percentages
+    status_data = []
+    total_povs = metrics['total_povs']
+
+    if total_povs > 0:
+        won_pct = (metrics['closed_won_count'] / total_povs) * 100
+        lost_pct = (metrics['closed_lost_count'] / total_povs) * 100
+        in_progress_count = total_povs - metrics['completed_povs']
+        in_progress_pct = (in_progress_count / total_povs) * 100
+
+        status_data = [
+            {
+                'label': f"Closed Won: {metrics['closed_won_count']} ({won_pct:.0f}%)",
+                'value': metrics['closed_won_count'],
+                'color': '#28a745'
+            },
+            {
+                'label': f"Closed Lost: {metrics['closed_lost_count']} ({lost_pct:.0f}%)",
+                'value': metrics['closed_lost_count'],
+                'color': '#dc3545'
+            },
+            {
+                'label': f"In Progress: {in_progress_count} ({in_progress_pct:.0f}%)",
+                'value': in_progress_count,
+                'color': '#ffc107'
+            }
+        ]
+
     # Get filter parameters
     se_filter = request.args.get('se', '')
     ae_filter = request.args.get('ae', '')
@@ -200,7 +320,9 @@ def dashboard():
                                start_date_from=start_date_from,
                                start_date_to=start_date_to,
                                end_date_from=end_date_from,
-                               end_date_to=end_date_to)
+                               end_date_to=end_date_to,
+                               metrics=metrics,
+                               status_data=status_data)
     
     except Exception as e:
         # If there's a database error, try to reinitialize
@@ -561,7 +683,7 @@ def analytics():
             status_labels.append(f"{status}: {count} ({percentage}%)")
             status_data.append(count)
         
-        # Count POVs by stage - for ACTIVE POVs use "In Trial" and "Pending Sales"
+        # Count POVs by stage - for ACTIVE POVs
         try:
             stage_counts = db.session.query(
                 POV.current_stage, func.count(POV.id)
@@ -757,6 +879,67 @@ def init_database():
     else:
         flash('Error initializing database.', 'danger')
     return redirect(url_for('dashboard'))
+
+@app.route('/pov/<int:pov_id>/roadblock', methods=['GET', 'POST'])
+def manage_roadblock(pov_id):
+    pov = POV.query.get_or_404(pov_id)
+    if request.method == 'POST':
+        pov.roadblock_category = request.form.get('roadblock_category')
+        pov.roadblock_severity = request.form.get('roadblock_severity')
+        pov.roadblock_owner = request.form.get('roadblock_owner')
+        pov.roadblock_notes = request.form.get('roadblock_notes')
+        if not pov.roadblock_created_date:
+            pov.roadblock_created_date = datetime.utcnow().date()
+        if request.form.get('action') == 'resolve':
+            pov.roadblock_resolved_date = datetime.utcnow().date()
+        elif request.form.get('action') == 'reopen':
+            pov.roadblock_resolved_date = None
+        db.session.commit()
+        flash('Roadblock updated successfully!', 'success')
+        return redirect(url_for('pov_detail', id=pov_id))
+    return render_template('roadblock_form.html', pov=pov)
+
+def get_roadblock_analytics():
+    """Get comprehensive roadblock analytics"""
+    active_roadblocks = POV.query.filter(
+        POV.deleted == False,
+        POV.roadblock_category.isnot(None),
+        POV.roadblock_resolved_date.is_(None)
+    ).all()
+    category_counts = {}
+    severity_counts = {'High': 0, 'Medium': 0, 'Low': 0}
+    owner_counts = {'AE': 0, 'SE': 0, 'Leadership': 0, 'Engineering': 0}
+    total_stagnant_days = 0
+    high_priority_stagnant = []
+    for pov in active_roadblocks:
+        category = pov.roadblock_category or 'Unspecified'
+        category_counts[category] = category_counts.get(category, 0) + 1
+        if pov.roadblock_severity in severity_counts:
+            severity_counts[pov.roadblock_severity] += 1
+        if pov.roadblock_owner in owner_counts:
+            owner_counts[pov.roadblock_owner] += 1
+        days_stagnant = pov.days_stagnant
+        total_stagnant_days += days_stagnant
+        if (pov.roadblock_severity == 'High' and days_stagnant > 7) or days_stagnant > 14:
+            high_priority_stagnant.append({
+                'pov': pov,
+                'days_stagnant': days_stagnant,
+                'company': getattr(pov, 'company_name', pov.deal_name)
+            })
+    avg_stagnant_days = total_stagnant_days / len(active_roadblocks) if active_roadblocks else 0
+    return {
+        'total_active_roadblocks': len(active_roadblocks),
+        'category_counts': category_counts,
+        'severity_counts': severity_counts,
+        'owner_counts': owner_counts,
+        'avg_stagnant_days': round(avg_stagnant_days, 1),
+        'high_priority_stagnant': sorted(high_priority_stagnant, key=lambda x: x['days_stagnant'], reverse=True)
+    }
+
+@app.route('/roadblocks/analytics')
+def roadblock_analytics():
+    analytics = get_roadblock_analytics()
+    return render_template('roadblock_analytics.html', analytics=analytics)
 
 if __name__ == '__main__':
     # Create tables if running directly
