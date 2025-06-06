@@ -146,9 +146,15 @@
 
 {% block scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Status Chart
-        const statusCtx = document.getElementById('statusChart').getContext('2d');
+// Wait for everything to load
+window.addEventListener('load', function() {
+    console.log('Starting charts initialization...');
+    console.log('Status data:', {{ status_data|tojson }});
+    console.log('Stage data:', {{ stage_data|tojson }});
+    
+    // Status Chart
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
         const statusChart = new Chart(statusCtx, {
             type: 'doughnut',
             data: {
@@ -156,10 +162,10 @@
                 datasets: [{
                     data: {{ status_data|tojson }},
                     backgroundColor: [
-                        '#28a745', // Active - green
-                        '#ffc107', // On Hold - yellow
-                        '#0275d8', // Won - blue
-                        '#dc3545'  // Lost - red
+                        '#dc3545', // Closed Lost - red
+                        '#0275d8', // Closed Won - blue  
+                        '#28a745', // In Trial - green
+                        '#ffc107'  // Pending Sales - yellow
                     ],
                     borderWidth: 1
                 }]
@@ -173,9 +179,12 @@
                 }
             }
         });
+        console.log('Status chart created');
+    }
 
-        // Stage Chart
-        const stageCtx = document.getElementById('stageChart').getContext('2d');
+    // Stage Chart
+    const stageCtx = document.getElementById('stageChart');
+    if (stageCtx) {
         const stageChart = new Chart(stageCtx, {
             type: 'bar',
             data: {
@@ -204,9 +213,12 @@
                 }
             }
         });
+        console.log('Stage chart created');
+    }
 
-        // SE Chart
-        const seCtx = document.getElementById('seChart').getContext('2d');
+    // SE Chart
+    const seCtx = document.getElementById('seChart');
+    if (seCtx) {
         const seChart = new Chart(seCtx, {
             type: 'pie',
             data: {
@@ -232,9 +244,12 @@
                 }
             }
         });
+        console.log('SE chart created');
+    }
 
-        // Outcome Chart (Won vs Lost)
-        const outcomeCtx = document.getElementById('outcomeChart').getContext('2d');
+    // Won vs Lost Chart
+    const outcomeCtx = document.getElementById('outcomeChart');
+    if (outcomeCtx) {
         const outcomeChart = new Chart(outcomeCtx, {
             type: 'bar',
             data: {
@@ -263,9 +278,12 @@
                 }
             }
         });
+        console.log('Outcome chart created');
+    }
 
-        // Monthly Chart
-        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    // Monthly Chart
+    const monthlyCtx = document.getElementById('monthlyChart');
+    if (monthlyCtx) {
         const monthlyChart = new Chart(monthlyCtx, {
             type: 'line',
             data: {
@@ -291,6 +309,10 @@
                 }
             }
         });
-    });
+        console.log('Monthly chart created');
+    }
+    
+    console.log('All charts initialization complete!');
+});
 </script>
 {% endblock %}
