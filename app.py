@@ -652,7 +652,12 @@ def analytics():
             print(f"Error in monthly data: {e}")
             monthly_labels = ['6 months ago', '5 months ago', '4 months ago', '3 months ago', '2 months ago', 'Last month']
             monthly_data = [1, 2, 3, 2, 4, 3]  # Fallback sample data
-        
+
+        # Debug: Print what we're sending to template
+        print(f"Sending to template - status_labels: {status_labels}, status_data: {status_data}")
+        print(f"Sending to template - stage_labels: {stage_labels}, stage_data: {stage_data}")
+        print(f"Sending to template - se_labels: {se_labels}, se_data: {se_data}")
+
         return render_template(
             'analytics.html',
             status_labels=status_labels,
