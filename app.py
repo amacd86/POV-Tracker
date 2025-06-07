@@ -327,7 +327,10 @@ def dashboard():
     end_date_to = request.args.get('end_date_to', '')
 
     try:
-        db.create_all()
+        # Only create tables if they do not exist (no drop_all, no destructive init)
+        if not os.path.exists(database_path):
+            db.create_all()
+        
         query = POV.query.filter_by(deleted=False)
 
         if se_filter:
@@ -392,11 +395,11 @@ def dashboard():
 
     except Exception as e:
         flash('Database needs to be initialized. Creating tables...', 'info')
-        if init_db():
-            flash('Database initialized successfully! Please refresh the page.', 'success')
-        else:
-            flash(f'Database error: {str(e)}', 'danger')
-
+        # Do NOT call init_db() automatically here
+        # if init_db():
+        #     flash('Database initialized successfully! Please refresh the page.', 'success')
+        # else:
+        #     flash(f'Database error: {str(e)}', 'danger')
         return render_template('dashboard.html', povs=[], all_ses=[], all_aes=[], all_statuses=[],
                                se_filter='', ae_filter='', status_filter='',
                                start_date_from='', start_date_to='', end_date_from='', end_date_to='')
@@ -916,6 +919,6 @@ def roadblock_analytics():
     return render_template('roadblock_analytics.html', analytics=analytics)
 
 if __name__ == '__main__':
-    # Create tables if running directly
-    init_db()
+    # Do NOT call init_db() automatically here!
+    # init_db()
     app.run(debug=True)
