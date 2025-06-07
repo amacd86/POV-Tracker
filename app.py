@@ -279,7 +279,9 @@ def edit_pov(pov_id):
 @app.route('/pov/<int:pov_id>')
 def pov_detail(pov_id):
     pov = POV.query.get_or_404(pov_id)
-    return render_template('pov_detail.html', pov=pov)
+    note_form = NoteForm()  # Create an instance of the note form
+    # Note: The pov.notes relationship is handled automatically by the backref
+    return render_template('pov_detail.html', pov=pov, note_form=note_form)
 
 @app.route('/export_csv')
 def export_csv():
@@ -353,6 +355,27 @@ def mark_complete(pov_id):
     else:
         flash('Invalid status provided.', 'danger')
     return redirect(url_for('dashboard'))
+
+@app.route('/pov/<int:pov_id>/add_note', methods=['POST'])
+def add_note(pov_id):
+    pov = POV.query.get_or_404(pov_id)
+    form = NoteForm()
+    if form.validate_on_submit():
+        note = Note(content=form.content.data, pov_id=pov.id)
+        db.session.add(note)
+        db.session.commit()
+        flash('Note added successfully.', 'success')
+    return redirect(url_for('pov_detail', pov_id=pov.id))
+
+@app.route('/pov/<int:pov_id>/update_stage', methods=['POST'])
+def update_stage(pov_id):
+    pov = POV.query.get_or_404(pov_id)
+    new_stage = request.form.get('stage')
+    if new_stage:
+        pov.current_stage = new_stage
+        db.session.commit()
+        flash(f'Stage updated to {new_stage}.', 'info')
+    return redirect(url_for('pov_detail', pov_id=pov.id))
 
 if __name__ == '__main__':
     app.run(debug=True)

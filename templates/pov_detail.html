@@ -1,211 +1,79 @@
 {% extends "layout.html" %}
 
-{% block title %}POV Details{% endblock %}
-
-{% block page_title %}POV Details{% endblock %}
+{% block title %}POV Details: {{ pov.deal_name }}{% endblock %}
 
 {% block content %}
 <div class="card shadow-sm">
-    <div class="card-header">
-        <div class="row align-items-center">
-            <div class="col">
-                <h5 class="mb-0">{{ pov.deal_name }}</h5>
-            </div>
-            <div class="col-auto">
-                <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
-                </a>
-                <a href="{{ url_for('edit_pov', pov_id=pov.id) }}" class="btn btn-sm btn-secondary ms-1">
-                    <i class="fas fa-edit me-1"></i>Edit POV
-                </a>
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">{{ pov.deal_name }}</h5>
+            <div>
+                <a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back</a>
+                <a href="{{ url_for('edit_pov', pov_id=pov.id) }}" class="btn btn-sm btn-primary ms-1"><i class="fas fa-edit me-1"></i>Edit POV</a>
             </div>
         </div>
     </div>
 
     <div class="card-body">
         <div class="row">
-            <!-- POV Details -->
             <div class="col-md-7">
                 <h6 class="border-bottom pb-2 mb-3">POV Details</h6>
+                <div class="row mb-2">
+                    <div class="col-sm-6"><strong>Customer:</strong> {{ pov.customer_name }}</div>
+                    <div class="col-sm-6"><strong>Status:</strong> <span class="badge bg-primary">{{ pov.status }}</span></div>
+                </div>
+                <div class="row mb-2">
+                    <div class="col-sm-6"><strong>Assigned SE:</strong> {{ pov.assigned_se }}</div>
+                    <div class="col-sm-6"><strong>Assigned AE:</strong> {{ pov.assigned_ae }}</div>
+                </div>
                 <div class="row mb-3">
-                    <div class="col-md-6">
-                        <p class="mb-1"><strong>Deal Name:</strong> {{ pov.deal_name }}</p>
-                        <p class="mb-1"><strong>Assigned SE:</strong> {{ pov.assigned_se }}</p>
-                        <p class="mb-1"><strong>Assigned AE:</strong> {{ pov.assigned_ae }}</p>
-                        <p class="mb-1"><strong>Start Date:</strong> {{ pov.start_date.strftime('%m/%d/%Y') }}</p>
-                        <p class="mb-1"><strong>Projected End Date:</strong> {{ pov.projected_end_date.strftime('%m/%d/%Y') }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <p class="mb-1">
-                            <strong>Status:</strong>
-                            <span class="badge
-                                {% if pov.status == 'In Trial' %}bg-success
-                                {% elif pov.status == 'On Hold' %}bg-warning
-                                {% elif pov.status == 'Closed Won' %}bg-primary
-                                {% elif pov.status == 'Closed Lost' %}bg-danger
-                                {% elif pov.status == 'Pending Sales' %}bg-info
-                                {% endif %}">
-                                {{ pov.status }}
-                            </span>
-                        </p>
-                        <p class="mb-1">
-                            <strong>Current Stage:</strong>
-                            <span class="badge
-                                {% if pov.current_stage == 'Deployment' %}bg-info
-                                {% elif pov.current_stage == 'Training 1' %}bg-primary
-                                {% elif pov.current_stage == 'Training 2' %}bg-warning
-                                {% elif pov.current_stage == 'POV Wrap-Up' %}bg-success
-                                {% elif pov.current_stage == 'Completed' %}bg-secondary
-                                {% endif %}">
-                                {{ pov.current_stage }}
-                            </span>
-                        </p>
-                        <p class="mb-1">
-                            <strong>Roadblocks:</strong>
-                            {% if pov.roadblocks %}
-                                {% if pov.overcome_roadblocks %}
-                                    <span class="badge bg-success">Overcome</span>
-                                {% else %}
-                                    <span class="badge bg-warning">Present</span>
-                                {% endif %}
-                            {% else %}
-                                <span class="badge bg-secondary">None</span>
-                            {% endif %}
-                        </p>
-                        <p class="mb-1"><strong>Created:</strong> {{ pov.created_at.strftime('%m/%d/%Y %H:%M') }}</p>
-                        <p class="mb-1"><strong>Updated:</strong> {{ pov.updated_at.strftime('%m/%d/%Y %H:%M') }}</p>
-                        <p class="mb-1"><strong>Deal Amount:</strong> {% if pov.deal_amount %}${{ "%.2f"|format(pov.deal_amount) }}{% else %}-{% endif %}</p>
-                    </div>
+                    <div class="col-sm-6"><strong>Start Date:</strong> {{ pov.start_date.strftime('%m/%d/%Y') if pov.start_date }}</div>
+                    <div class="col-sm-6"><strong>Projected End:</strong> {{ pov.projected_end_date.strftime('%m/%d/%Y') if pov.projected_end_date }}</div>
                 </div>
 
-                {% if pov.roadblocks %}
-                    <h6 class="border-bottom pb-2 mb-3">Roadblocks</h6>
-                    <div class="card bg-light mb-3">
-                        <div class="card-body py-2">
-                            <p class="mb-0">{{ pov.roadblocks|nl2br|safe }}</p>
-                        </div>
-                    </div>
+                {% if pov.roadblock_category %}
+                <h6 class="border-bottom pb-2 mb-3 mt-4">Roadblock Details</h6>
+                <div class="row">
+                    <div class="col-sm-4"><strong>Category:</strong> {{ pov.roadblock_category }}</div>
+                    <div class="col-sm-4"><strong>Severity:</strong> {{ pov.roadblock_severity }}</div>
+                    <div class="col-sm-4"><strong>Owner:</strong> {{ pov.roadblock_owner }}</div>
+                </div>
+                <div class="mt-2">
+                    <strong>Days Stagnant:</strong> 
+                    <span class="badge {% if pov.days_stagnant > 14 %}bg-danger{% elif pov.days_stagnant > 7 %}bg-warning{% else %}bg-secondary{% endif %}">{{ pov.days_stagnant }}</span>
+                </div>
+                {% if pov.roadblock_notes %}
+                    <div class="mt-2"><strong>Notes:</strong> {{ pov.roadblock_notes }}</div>
                 {% endif %}
-
-                <h6 class="border-bottom pb-2 mb-3">Update Stage</h6>
-                <div class="btn-group mb-3">
-                    <a href="{{ url_for('update_stage', id=pov.id, stage='Deployment') }}" class="btn btn-sm {% if pov.current_stage == 'Deployment' %}btn-info{% else %}btn-outline-info{% endif %}">Deployment</a>
-                    <a href="{{ url_for('update_stage', id=pov.id, stage='Training 1') }}" class="btn btn-sm {% if pov.current_stage == 'Training 1' %}btn-primary{% else %}btn-outline-primary{% endif %}">Training 1</a>
-                    <a href="{{ url_for('update_stage', id=pov.id, stage='Training 2') }}" class="btn btn-sm {% if pov.current_stage == 'Training 2' %}btn-warning{% else %}btn-outline-warning{% endif %}">Training 2</a>
-                    <a href="{{ url_for('update_stage', id=pov.id, stage='Wrap-Up') }}" class="btn btn-sm {% if pov.current_stage == 'Wrap-Up' %}btn-success{% else %}btn-outline-success{% endif %}">Wrap-Up</a>
-                    <a href="{{ url_for('update_stage', id=pov.id, stage='Tech Call') }}" class="btn btn-sm {% if pov.current_stage == 'Tech Call' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Tech Call</a>
-                </div>
-
-                {% if pov.status == 'Active' %}
-                    <h6 class="border-bottom pb-2 mb-3">Mark Complete</h6>
-                    <div class="btn-group mb-3">
-                        <a href="{{ url_for('mark_complete', id=pov.id, status='Closed - Won') }}" class="btn btn-sm btn-outline-primary">Mark as Won</a>
-                        <a href="{{ url_for('mark_complete', id=pov.id, status='Closed - Lost') }}" class="btn btn-sm btn-outline-danger">Mark as Lost</a>
-                    </div>
+                {% else %}
+                 <p class="text-muted">No roadblocks recorded.</p>
                 {% endif %}
             </div>
 
-            <!-- Notes Section -->
-            <div class="col-md-5">
+            <div class="col-md-5 border-start">
                 <h6 class="border-bottom pb-2 mb-3">POV Notes</h6>
-                
-                <!-- Add Note Form -->
                 <div class="card mb-3">
                     <div class="card-body">
-                        <form method="post" action="{{ url_for('add_note', id=pov.id) }}">
-                            {{ note_form.csrf_token }}
-                            <div class="mb-3">
-                                {{ note_form.content(class="form-control", rows=3, placeholder="Add a new note...") }}
-                            </div>
-                            <button type="submit" class="btn btn-primary">Add Note</button>
+                        <form method="post" action="{{ url_for('add_note', pov_id=pov.id) }}">
+                            {{ note_form.hidden_tag() }}
+                            <div class="mb-2">{{ note_form.content(class="form-control", rows=2, placeholder="Add a new note...") }}</div>
+                            <button type="submit" class="btn btn-primary btn-sm">Add Note</button>
                         </form>
                     </div>
                 </div>
 
-                <!-- Notes List -->
-                {% if notes %}
-                    <div class="notes-timeline">
-                        {% for note in notes %}
-                            <div class="card mb-3">
-                                <div class="card-header bg-light py-1">
-                                    <small class="text-muted timestamp" data-utc="{{ note.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}">
-                                        {{ note.timestamp.strftime('%m/%d/%Y %H:%M') }}
-                                    </small>
-                                </div>
-                                <div class="card-body py-2">
-                                    <p class="card-text mb-0">{{ note.content|nl2br|safe }}</p>
-                                </div>
-                            </div>
-                        {% endfor %}
+                <div class="notes-timeline">
+                    {% for note in pov.notes|sort(attribute='timestamp', reverse=True) %}
+                    <div class="card mb-2">
+                        <div class="card-header bg-light py-1 small text-muted">{{ note.timestamp.strftime('%m/%d/%Y %I:%M %p') }}</div>
+                        <div class="card-body py-2">{{ note.content|nl2br }}</div>
                     </div>
-                {% else %}
-                    <div class="alert alert-info">
-                        No notes added yet. Add the first note above.
-                    </div>
-                {% endif %}
+                    {% else %}
+                    <p class="text-muted">No notes added yet.</p>
+                    {% endfor %}
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-{% if pov.roadblock_category %}
-    <div class="card mt-4">
-        <div class="card-header">
-            <h4>Manage Roadblock</h4>
-        </div>
-        <div class="card-body">
-            <p>
-                <strong>Status:</strong>
-                {% if pov.roadblock_resolved_date %}
-                    <span class="badge bg-success">Resolved</span> on {{ pov.roadblock_resolved_date.strftime('%m-%d-%Y') }}
-                {% else %}
-                    <span class="badge bg-danger">Active</span>
-                {% endif %}
-            </p>
-
-            <form action="{{ url_for('manage_roadblock', pov_id=pov.id) }}" method="post">
-                {% if pov.roadblock_resolved_date %}
-                    <button type="submit" name="action" value="reopen" class="btn btn-warning">
-                        Re-open Roadblock
-                    </button>
-                {% else %}
-                    <button type="submit" name="action" value="resolve" class="btn btn-success">
-                        Mark as Resolved
-                    </button>
-                {% endif %}
-            </form>
-        </div>
-    </div>
-{% endif %}
-{% endblock %}
-
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Starting timestamp conversion...');
-    
-    // Convert all timestamps to user's local time
-    const timestamps = document.querySelectorAll('.timestamp');
-    console.log('Found timestamps:', timestamps.length);
-    
-    timestamps.forEach(function(element) {
-        const utcTime = element.getAttribute('data-utc');
-        console.log('Converting UTC time:', utcTime);
-        
-        if (utcTime) {
-            const localTime = new Date(utcTime + ' UTC');
-            const formatted = localTime.toLocaleString('en-US', {
-                month: '2-digit',
-                day: '2-digit', 
-                year: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-            });
-            console.log('Converted to:', formatted);
-            element.textContent = formatted;
-        }
-    });
-});
-</script>
 {% endblock %}
