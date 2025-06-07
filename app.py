@@ -130,12 +130,70 @@ def inject_now():
 
 # Forms
 class POVForm(FlaskForm):
-    # ... (No changes in this class) ...
-    pass
-
-class NoteForm(FlaskForm):
-    content = TextAreaField('Note', validators=[DataRequired()])
-    submit = SubmitField('Add Note')
+    # Basic POV Information
+    deal_name = StringField('Deal Name', validators=[DataRequired()])
+    customer_name = StringField('Customer Name', validators=[DataRequired()])
+    customer_email = StringField('Customer Email', validators=[Optional(), Email()])
+    
+    # Sales Team
+    assigned_ae = StringField('Account Executive', validators=[DataRequired()])
+    assigned_se = StringField('Sales Engineer', validators=[Optional()])
+    
+    # POV Details
+    current_stage = SelectField('Stage', choices=[
+        ('Deployment', 'Deployment'),
+        ('Training 1', 'Training 1'),
+        ('Training 2', 'Training 2'),
+        ('POV Wrap-Up', 'POV Wrap-Up'),
+        ('Completed', 'Completed')
+    ], validators=[DataRequired()])
+    
+    status = SelectField('Status', choices=[
+        ('In Trial', 'In Trial'),
+        ('Pending Sales', 'Pending Sales'),
+        ('On Hold', 'On Hold'),
+        ('Closed Won', 'Closed Won'),
+        ('Closed Lost', 'Closed Lost')
+    ], validators=[DataRequired()])
+    
+    # Dates
+    start_date = DateField('Start Date', format='%Y-%m-%d', validators=[DataRequired()])
+    projected_end_date = DateField('Projected End Date', format='%Y-%m-%d', validators=[Optional()])
+    actual_completion_date = DateField('Actual Completion Date', format='%Y-%m-%d', validators=[Optional()])
+    
+    # Financials and Success
+    deal_amount = FloatField('Deal Amount ($)', validators=[Optional()])
+    technical_win = BooleanField('Technical Win')
+    success_criteria = TextAreaField('Success Criteria', render_kw={"rows": 4}, validators=[Optional()])
+    
+    # Enhanced Roadblock Fields
+    roadblock_category = SelectField('Roadblock Category', choices=[
+        ('', 'No Roadblock'),
+        ('Technical', '🔧 Technical'),
+        ('Budget', '💰 Budget'),
+        ('Timeline', '⏰ Timeline'),
+        ('Decision Maker', '👥 Decision Maker'),
+        ('Competitive', '⚔️ Competitive')
+    ], validators=[Optional()])
+    
+    roadblock_severity = SelectField('Roadblock Severity', choices=[
+        ('', 'Select Severity'),
+        ('Low', '🟢 Low'),
+        ('Medium', '🟡 Medium'),
+        ('High', '🔴 High')
+    ], validators=[Optional()])
+    
+    roadblock_owner = SelectField('Roadblock Owner', choices=[
+        ('', 'Select Owner'),
+        ('AE', '👔 AE'),
+        ('SE', '🛠️ SE'),
+        ('Leadership', '👑 Leadership'),
+        ('Engineering', '⚙️ Engineering')
+    ], validators=[Optional()])
+    
+    roadblock_notes = TextAreaField('Roadblock Notes', render_kw={"rows": 4}, validators=[Optional()])
+    
+    submit = SubmitField('Save POV')
 
 # Initialize database function
 def init_db():
