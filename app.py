@@ -8,6 +8,7 @@ import os
 import csv
 from io import StringIO, BytesIO
 from sqlalchemy import func, extract
+from collections import Counter
 
 # Create Flask app first
 app = Flask(__name__)
@@ -379,30 +380,53 @@ def dashboard():
 
         all_statuses = [('Active', 'Active'), ('On Hold', 'On Hold'), ('Closed - Won', 'Closed - Won'), ('Closed - Lost', 'Closed - Lost')]
 
-        return render_template('dashboard.html', povs=povs,
-                               all_ses=[se[0] for se in all_ses],
-                               all_aes=[ae[0] for ae in all_aes],
-                               all_statuses=all_statuses,
-                               se_filter=se_filter,
-                               ae_filter=ae_filter,
-                               status_filter=status_filter,
-                               start_date_from=start_date_from,
-                               start_date_to=start_date_to,
-                               end_date_from=end_date_from,
-                               end_date_to=end_date_to,
-                               metrics=metrics,
-                               status_data=status_data)
+        # Status chart with percentages (for Chart.js)
+        all_statuses = [row[0] for row in db.session.query(POV.status).filter(POV.deleted == False).all()]
+        status_counts = Counter(all_statuses)
+        total_povs = len(all_statuses)
+        chart_data = {
+            'labels': [],
+            'datasets': [{
+                'data': [],
+                'backgroundColor': [
+                    '#28a745',  # Closed Won
+                    '#dc3545',  # Closed Lost
+                    '#ffc107',  # In Progress
+                    '#6c757d',  # On Hold
+                    '#17a2b8',  # Pending Sales
+                    '#007bff',  # Other
+                ]
+            }]
+        }
+        color_map = {
+            'Closed Won': '#28a745',
+            'Closed Lost': '#dc3545',
+            'In Trial': '#ffc107',
+            'On Hold': '#6c757d',
+            'Pending Sales': '#17a2b8'
+        }
+        for status, count in status_counts.items():
+            percentage = (count / total_povs) * 100 if total_povs else 0
+            chart_data['labels'].append(f"{status}: {count} ({percentage:.0f}%)")
+            chart_data['datasets'][0]['data'].append(count)
+            chart_data['datasets'][0]['backgroundColor'].append(color_map.get(status, '#007bff'))
 
-    except Exception as e:
-        flash('Database needs to be initialized. Creating tables...', 'info')
-        # Do NOT call init_db() automatically here
-        # if init_db():
-        #     flash('Database initialized successfully! Please refresh the page.', 'success')
-        # else:
-        #     flash(f'Database error: {str(e)}', 'danger')
-        return render_template('dashboard.html', povs=[], all_ses=[], all_aes=[], all_statuses=[],
-                               se_filter='', ae_filter='', status_filter='',
-                               start_date_from='', start_date_to='', end_date_from='', end_date_to='')
+    # ...existing code...
+    return render_template('dashboard.html', 
+                           povs=povs,
+                           all_ses=[se[0] for se in all_ses],
+                           all_aes=[ae[0] for ae in all_aes],
+                           all_statuses=all_statuses,
+                           se_filter=se_filter,
+                           ae_filter=ae_filter,
+                           status_filter=status_filter,
+                           start_date_from=start_date_from,
+                           start_date_to=start_date_to,
+                           end_date_from=end_date_from,
+                           end_date_to=end_date_to,
+                           metrics=metrics,
+                           status_data=status_data,
+                           chart_data=chart_data)
 
 @app.route('/pov/new', methods=['GET', 'POST'])
 def new_pov():

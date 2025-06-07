@@ -67,17 +67,23 @@ def map_stage(pov_stage):
     }
     return stage_mapping.get(stage, 'Deployment')
 
-def map_technical_win(technical_win):
-    """Map CSV Technical Win to database technical_win"""
-    if not technical_win or technical_win.strip() == '':
-        return 'Pending'
-    tech_win = technical_win.strip().lower()
-    if tech_win in ['yes', 'y', 'true', '1']:
-        return 'Yes'
-    elif tech_win in ['no', 'n', 'false', '0']:
-        return 'No'
+def to_boolean(value):
+    """Converts a string to a boolean value."""
+    if isinstance(value, bool):
+        return value
+    if value is None:
+        return False
+    val = str(value).strip().lower()
+    if val in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif val in ('no', 'false', 'f', 'n', '0'):
+        return False
     else:
-        return 'Pending'
+        raise ValueError(f"Not a boolean value: '{value}'")
+
+def map_technical_win(technical_win):
+    """Map CSV Technical Win to database technical_win (boolean)"""
+    return to_boolean(technical_win)
 
 def import_csv_data(csv_file):
     """Import POVs and Notes from a CSV file"""
