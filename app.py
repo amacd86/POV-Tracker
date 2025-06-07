@@ -289,7 +289,14 @@ def get_pov_metrics():
 @app.route('/')
 def dashboard():
     metrics = get_pov_metrics()
-    # ...existing code...
+    # Define filter defaults at the start
+    se_filter = request.args.get('se', '')
+    ae_filter = request.args.get('ae', '')
+    status_filter = request.args.get('status', '')
+    start_date_from = request.args.get('start_date_from', '')
+    start_date_to = request.args.get('start_date_to', '')
+    end_date_from = request.args.get('end_date_from', '')
+    end_date_to = request.args.get('end_date_to', '')
 
     try:
         # Only create tables if they do not exist (no drop_all, no destructive init)
@@ -345,9 +352,9 @@ def dashboard():
         all_statuses = [('Active', 'Active'), ('On Hold', 'On Hold'), ('Closed - Won', 'Closed - Won'), ('Closed - Lost', 'Closed - Lost')]
 
         # Status chart with percentages (for Chart.js)
-        all_statuses = [row[0] for row in db.session.query(POV.status).filter(POV.deleted == False).all()]
-        status_counts = Counter(all_statuses)
-        total_povs = len(all_statuses)
+        all_statuses_chart = [row[0] for row in db.session.query(POV.status).filter(POV.deleted == False).all()]
+        status_counts = Counter(all_statuses_chart)
+        total_povs = len(all_statuses_chart)
         chart_data = {
             'labels': [],
             'datasets': [{
@@ -392,13 +399,28 @@ def dashboard():
                                chart_data=chart_data)
     except Exception as e:
         flash(f'Could not load all dashboard data: {e}', 'danger')
+        povs = []
+        all_ses = []
+        all_aes = []
+        all_statuses = []
+        chart_data = {'labels': [], 'datasets': [{'data': [], 'backgroundColor': []}]}
+        status_data = []
+        # Ensure filters are defined
+        se_filter = se_filter if 'se_filter' in locals() else ''
+        ae_filter = ae_filter if 'ae_filter' in locals() else ''
+        status_filter = status_filter if 'status_filter' in locals() else ''
+        start_date_from = start_date_from if 'start_date_from' in locals() else ''
+        start_date_to = start_date_to if 'start_date_to' in locals() else ''
+        end_date_from = end_date_from if 'end_date_from' in locals() else ''
+        end_date_to = end_date_to if 'end_date_to' in locals() else ''
         return render_template('dashboard.html', 
-                               povs=[], all_ses=[], all_aes=[], all_statuses=[],
-                               se_filter='', ae_filter='', status_filter='',
-                               start_date_from='', start_date_to='', end_date_from='', end_date_to='',
+                               povs=povs, all_ses=all_ses, all_aes=all_aes, all_statuses=all_statuses,
+                               se_filter=se_filter, ae_filter=ae_filter, status_filter=status_filter,
+                               start_date_from=start_date_from, start_date_to=start_date_to,
+                               end_date_from=end_date_from, end_date_to=end_date_to,
                                metrics=metrics,
-                               status_data=[],
-                               chart_data={'labels': [], 'datasets': [{'data': [], 'backgroundColor': []}]})
+                               status_data=status_data,
+                               chart_data=chart_data)
 
 @app.route('/pov/new', methods=['GET', 'POST'])
 def new_pov():
