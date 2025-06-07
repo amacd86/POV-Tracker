@@ -289,43 +289,7 @@ def get_pov_metrics():
 @app.route('/')
 def dashboard():
     metrics = get_pov_metrics()
-
-    # Get status distribution for pie chart with percentages
-    status_data = []
-    total_povs = metrics['total_povs']
-
-    if total_povs > 0:
-        won_pct = (metrics['closed_won_count'] / total_povs) * 100
-        lost_pct = (metrics['closed_lost_count'] / total_povs) * 100
-        in_progress_count = total_povs - metrics['completed_povs']
-        in_progress_pct = (in_progress_count / total_povs) * 100
-
-        status_data = [
-            {
-                'label': f"Closed Won: {metrics['closed_won_count']} ({won_pct:.0f}%)",
-                'value': metrics['closed_won_count'],
-                'color': '#28a745'
-            },
-            {
-                'label': f"Closed Lost: {metrics['closed_lost_count']} ({lost_pct:.0f}%)",
-                'value': metrics['closed_lost_count'],
-                'color': '#dc3545'
-            },
-            {
-                'label': f"In Progress: {in_progress_count} ({in_progress_pct:.0f}%)",
-                'value': in_progress_count,
-                'color': '#ffc107'
-            }
-        ]
-
-    # Get filter parameters
-    se_filter = request.args.get('se', '')
-    ae_filter = request.args.get('ae', '')
-    status_filter = request.args.get('status', '')
-    start_date_from = request.args.get('start_date_from', '')
-    start_date_to = request.args.get('start_date_to', '')
-    end_date_from = request.args.get('end_date_from', '')
-    end_date_to = request.args.get('end_date_to', '')
+    # ...existing code...
 
     try:
         # Only create tables if they do not exist (no drop_all, no destructive init)
@@ -411,22 +375,30 @@ def dashboard():
             chart_data['datasets'][0]['data'].append(count)
             chart_data['datasets'][0]['backgroundColor'].append(color_map.get(status, '#007bff'))
 
-    # ...existing code...
-    return render_template('dashboard.html', 
-                           povs=povs,
-                           all_ses=[se[0] for se in all_ses],
-                           all_aes=[ae[0] for ae in all_aes],
-                           all_statuses=all_statuses,
-                           se_filter=se_filter,
-                           ae_filter=ae_filter,
-                           status_filter=status_filter,
-                           start_date_from=start_date_from,
-                           start_date_to=start_date_to,
-                           end_date_from=end_date_from,
-                           end_date_to=end_date_to,
-                           metrics=metrics,
-                           status_data=status_data,
-                           chart_data=chart_data)
+        return render_template('dashboard.html', 
+                               povs=povs,
+                               all_ses=[se[0] for se in all_ses],
+                               all_aes=[ae[0] for ae in all_aes],
+                               all_statuses=all_statuses,
+                               se_filter=se_filter,
+                               ae_filter=ae_filter,
+                               status_filter=status_filter,
+                               start_date_from=start_date_from,
+                               start_date_to=start_date_to,
+                               end_date_from=end_date_from,
+                               end_date_to=end_date_to,
+                               metrics=metrics,
+                               status_data=status_data,
+                               chart_data=chart_data)
+    except Exception as e:
+        flash(f'Could not load all dashboard data: {e}', 'danger')
+        return render_template('dashboard.html', 
+                               povs=[], all_ses=[], all_aes=[], all_statuses=[],
+                               se_filter='', ae_filter='', status_filter='',
+                               start_date_from='', start_date_to='', end_date_from='', end_date_to='',
+                               metrics=metrics,
+                               status_data=[],
+                               chart_data={'labels': [], 'datasets': [{'data': [], 'backgroundColor': []}]})
 
 @app.route('/pov/new', methods=['GET', 'POST'])
 def new_pov():
