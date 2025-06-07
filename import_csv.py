@@ -168,7 +168,7 @@ def import_csv_data(csv_file):
                     
                     # Handle text fields
                     success_criteria = row.get('Success Criteria', '').strip()
-                    roadblocks = row.get('Roadblocks', '').strip()
+                    roadblock_notes_from_csv = row.get('Roadblocks', '').strip()
                     win_loss_reason = row.get('Reason', '').strip()
                     
                     # Handle roadblock resolution
@@ -185,20 +185,19 @@ def import_csv_data(csv_file):
                     # Create POV record
                     pov = POV(
                         deal_name=deal_name,
+                        customer_name=assigned_ae,  # Using AE as a placeholder for customer name
                         assigned_se=assigned_se,
                         assigned_ae=assigned_ae,
                         start_date=start_date,
                         projected_end_date=projected_end_date,
                         actual_completion_date=complete_date,
                         current_stage=current_stage,
-                        roadblocks=roadblocks,
-                        overcome_roadblocks=overcome_roadblocks,
                         status=status,
                         deal_amount=deal_amount,
                         success_criteria=success_criteria,
                         technical_win=technical_win,
-                        roadblock_resolution=roadblock_resolution,
-                        win_loss_reason=win_loss_reason,
+                        # Map the old 'roadblocks' text to the new 'roadblock_notes'
+                        roadblock_notes=roadblock_notes_from_csv,
                         deleted=False
                     )
                     
