@@ -147,6 +147,36 @@
         </div>
     </div>
 </div>
+
+{% if pov.roadblock_category %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h4>Manage Roadblock</h4>
+        </div>
+        <div class="card-body">
+            <p>
+                <strong>Status:</strong>
+                {% if pov.roadblock_resolved_date %}
+                    <span class="badge bg-success">Resolved</span> on {{ pov.roadblock_resolved_date.strftime('%m-%d-%Y') }}
+                {% else %}
+                    <span class="badge bg-danger">Active</span>
+                {% endif %}
+            </p>
+
+            <form action="{{ url_for('manage_roadblock', pov_id=pov.id) }}" method="post">
+                {% if pov.roadblock_resolved_date %}
+                    <button type="submit" name="action" value="reopen" class="btn btn-warning">
+                        Re-open Roadblock
+                    </button>
+                {% else %}
+                    <button type="submit" name="action" value="resolve" class="btn btn-success">
+                        Mark as Resolved
+                    </button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+{% endif %}
 {% endblock %}
 
 {% block scripts %}
