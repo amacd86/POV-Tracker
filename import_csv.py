@@ -68,18 +68,16 @@ def map_stage(pov_stage):
     return stage_mapping.get(stage, 'Deployment')
 
 def to_boolean(value):
-    """Converts a string to a boolean value."""
+    """Converts a string to a boolean value, handling non-boolean strings."""
     if isinstance(value, bool):
         return value
     if value is None:
-        return False
+        return False  # Default for None
     val = str(value).strip().lower()
     if val in ('yes', 'true', 't', 'y', '1'):
         return True
-    elif val in ('no', 'false', 'f', 'n', '0'):
-        return False
-    else:
-        raise ValueError(f"Not a boolean value: '{value}'")
+    # Everything else, including 'no', 'pending', '', etc., will be False.
+    return False
 
 def map_technical_win(technical_win):
     """Map CSV Technical Win to database technical_win (boolean)"""

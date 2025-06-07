@@ -1,380 +1,78 @@
 {% extends "layout.html" %}
 
-{% block title %}Analytics{% endblock %}
-
+{% block title %}POV Analytics{% endblock %}
 {% block page_title %}POV Analytics{% endblock %}
 
-{% block head %}
-{{ super() }}
-{% endblock %}
-
 {% block content %}
-<div class="row">
-    <div class="col-md-12 mb-3">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h5 class="mb-0">POV Dashboard Analytics</h5>
-            </div>
-            <div class="card-body">
-                <p class="text-muted">
-                    Overview of your Proof of Value (POV) projects and performance metrics.
-                    <a href="{{ url_for('dashboard') }}" class="float-end btn btn-sm btn-outline-primary">
-                        <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
-                    </a>
-                </p>
-            </div>
+<div class="card shadow-sm">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col"><h5 class="mb-0">POV Dashboard Analytics</h5></div>
+            <div class="col-auto"><a href="{{ url_for('dashboard') }}" class="btn btn-sm btn-outline-primary"><i class="fas fa-arrow-left me-1"></i>Back to Dashboard</a></div>
         </div>
     </div>
-</div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-ending-soon"><div class="metric-number">{{ metrics.ending_soon }}</div><div class="metric-label">POVs ending in next 2 weeks</div></div></div>
+            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-overdue"><div class="metric-number">{{ metrics.overdue }}</div><div class="metric-label">POVs past end date</div></div></div>
+            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-duration"><div class="metric-number">{{ metrics.avg_duration }}</div><div class="metric-label">Days per active POV</div></div></div>
+            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-value"><div class="metric-number">${{ "{:,.0f}".format(metrics.total_value) }}</div><div class="metric-label">Total Value of Active POVs</div></div></div>
+        </div>
 
-<!-- Overview Stats -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card shadow-sm bg-primary text-white">
-            <div class="card-body">
-                <h6 class="card-title">Ending Soon</h6>
-                <h2 class="mb-0">{{ ending_soon }}</h2>
-                <p class="card-text small">POVs ending in next 2 weeks</p>
-            </div>
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-tech-wins"><div class="metric-number">{{ metrics.technical_wins }}</div><div class="metric-label">Completed Technical Wins</div></div></div>
+            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-cw-rate"><div class="metric-number">{{ metrics.pov_conversion_rate }}%</div><div class="metric-label">Conversion to Closed Won</div></div></div>
+            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-tech-win-rate"><div class="metric-number">{{ metrics.tech_win_rate }}%</div><div class="metric-label">Technical Win Rate</div></div></div>
+            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-in-progress"><div class="metric-number">{{ metrics.povs_in_progress }}</div><div class="metric-label">Active POV Count</div></div></div>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm bg-danger text-white">
-            <div class="card-body">
-                <h6 class="card-title">Overdue</h6>
-                <h2 class="mb-0">{{ overdue }}</h2>
-                <p class="card-text small">POVs past end date</p>
-            </div>
+        
+        <h5 class="mt-4">Current Stage Distribution (Active POVs)</h5>
+        <div class="row">
+             <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card stage-card"><div class="metric-number">{{ metrics.stage_counts.deployment }}</div><div class="metric-label">Deployment</div></div></div>
+             <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card stage-card"><div class="metric-number">{{ metrics.stage_counts.training_1 }}</div><div class="metric-label">Training 1</div></div></div>
+             <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card stage-card"><div class="metric-number">{{ metrics.stage_counts.training_2 }}</div><div class="metric-label">Training 2</div></div></div>
+             <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card stage-card"><div class="metric-number">{{ metrics.stage_counts.pov_wrap_up }}</div><div class="metric-label">POV Wrap-Up</div></div></div>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm bg-info text-white">
-            <div class="card-body">
-                <h6 class="card-title">Avg. Duration</h6>
-                <h2 class="mb-0">{{ avg_duration }}</h2>
-                <p class="card-text small">Days per active POV</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm bg-success text-white">
-            <div class="card-body">
-                <h6 class="card-title">Total Value</h6>
-                <h2 class="mb-0">${{ "%.2f"|format(total_value) }}</h2>
-                <p class="card-text small">Active POVs</p>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- New Row of Advanced Metrics -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card shadow-sm bg-info text-white">
-            <div class="card-body">
-                <h6 class="card-title">Technical Wins</h6>
-                <h2 class="mb-0">{{ technical_wins }}</h2>
-                <p class="card-text small">POVs with tech approval</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm bg-warning text-dark">
-            <div class="card-body">
-                <h6 class="card-title">POV to CW Rate</h6>
-                <h2 class="mb-0">{{ pov_conversion_rate }}%</h2>
-                <p class="card-text small">Conversion to Closed Won</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm bg-secondary text-white">
-            <div class="card-body">
-                <h6 class="card-title">Technical Win %</h6>
-                <h2 class="mb-0">{{ technical_win_rate }}%</h2>
-                <p class="card-text small">Technical approval rate</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm bg-dark text-white">
-            <div class="card-body">
-                <h6 class="card-title">POVs in Progress</h6>
-                <h2 class="mb-0">{{ povs_in_progress }}</h2>
-                <p class="card-text small">Active POV count</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Third Row: Stage Count Metrics -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card shadow-sm bg-primary text-white">
-            <div class="card-body">
-                <h6 class="card-title">Deployment</h6>
-                <h2 class="mb-0">{{ deployment_count }}</h2>
-                <p class="card-text small">Active POVs in deployment</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm bg-info text-white">
-            <div class="card-body">
-                <h6 class="card-title">Training 1</h6>
-                <h2 class="mb-0">{{ training1_count }}</h2>
-                <p class="card-text small">Active POVs in training 1</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm bg-warning text-dark">
-            <div class="card-body">
-                <h6 class="card-title">Training 2</h6>
-                <h2 class="mb-0">{{ training2_count }}</h2>
-                <p class="card-text small">Active POVs in training 2</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card shadow-sm bg-success text-white">
-            <div class="card-body">
-                <h6 class="card-title">POV Wrap-Up</h6>
-                <h2 class="mb-0">{{ wrapup_count }}</h2>
-                <p class="card-text small">Active POVs in wrap-up</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Charts -->
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h6 class="mb-0">POVs by Status</h6>
-            </div>
-            <div class="card-body">
-                <canvas id="statusChart" height="250"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h6 class="mb-0">Active POVs by Stage</h6>
-            </div>
-            <div class="card-body">
-                <canvas id="stageChart" height="250"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h6 class="mb-0">POVs by SE</h6>
-            </div>
-            <div class="card-body">
-                <canvas id="seChart" height="250"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h6 class="mb-0">Won vs Lost (Last 90 Days)</h6>
-            </div>
-            <div class="card-body">
-                <canvas id="outcomeChart" height="250"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-12">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h6 class="mb-0">Monthly POV Starts (Last 6 Months)</h6>
-            </div>
-            <div class="card-body">
-                <canvas id="monthlyChart" height="250"></canvas>
-            </div>
+        <div class="row mt-4">
+            <div class="col-lg-6 mb-4"><div class="chart-container"><h5 class="mb-3">POVs by Status</h5><canvas id="statusChart"></canvas></div></div>
+            <div class="col-lg-6 mb-4"><div class="chart-container"><h5 class="mb-3">POVs by Stage (Active)</h5><canvas id="stageChart"></canvas></div></div>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<!-- Load Chart.js from reliable CDN -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-
+{{ super() }}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Test if Chart.js loaded
-console.log('Chart.js loaded?', typeof Chart !== 'undefined');
+document.addEventListener('DOMContentLoaded', function () {
+    const chartColors = ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6c757d'];
 
-// Wait a bit more to ensure everything is ready
-setTimeout(function() {
-    if (typeof Chart === 'undefined') {
-        console.error('Chart.js failed to load completely!');
-        return;
-    }
-    
-    console.log('Starting charts initialization...');
-    console.log('Status data:', {{ status_data|tojson }});
-    
-    try {
-        // Status Chart
-        const statusCtx = document.getElementById('statusChart');
-        if (statusCtx) {
-            new Chart(statusCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: {{ status_labels|tojson }},
-                    datasets: [{
-                        data: {{ status_data|tojson }},
-                        backgroundColor: [
-                            '#dc3545', // Closed Lost - red
-                            '#0275d8', // Closed Won - blue  
-                            '#28a745', // In Trial - green
-                            '#ffc107'  // Pending Sales - yellow
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'right'
-                        }
-                    }
-                }
-            });
-            console.log('✅ Status chart created');
-        }
+    // Status Chart
+    const statusChartData = {{ status_chart_data|tojson }};
+    new Chart(document.getElementById('statusChart').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: statusChartData.map(d => `${d.label} (${(d.value / statusChartData.reduce((a, b) => a + b.value, 0) * 100).toFixed(0)}%)`),
+            datasets: [{ data: statusChartData.map(d => d.value), backgroundColor: chartColors }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'right' } } }
+    });
 
-        // Stage Chart
-        const stageCtx = document.getElementById('stageChart');
-        if (stageCtx) {
-            new Chart(stageCtx, {
-                type: 'bar',
-                data: {
-                    labels: {{ stage_labels|tojson }},
-                    datasets: [{
-                        label: 'POVs',
-                        data: {{ stage_data|tojson }},
-                        backgroundColor: '#17a2b8'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
-            });
-            console.log('✅ Stage chart created');
-        }
-
-        // SE Chart
-        const seCtx = document.getElementById('seChart');
-        if (seCtx) {
-            new Chart(seCtx, {
-                type: 'pie',
-                data: {
-                    labels: {{ se_labels|tojson }},
-                    datasets: [{
-                        data: {{ se_data|tojson }},
-                        backgroundColor: [
-                            '#6f42c1', '#20c997', '#fd7e14', '#e83e8c', '#6c757d'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'right'
-                        }
-                    }
-                }
-            });
-            console.log('✅ SE chart created');
-        }
-
-        // Won vs Lost Chart
-        const outcomeCtx = document.getElementById('outcomeChart');
-        if (outcomeCtx) {
-            new Chart(outcomeCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Won', 'Lost'],
-                    datasets: [{
-                        label: 'POVs',
-                        data: [{{ won_count }}, {{ lost_count }}],
-                        backgroundColor: ['#0275d8', '#dc3545']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                }
-            });
-            console.log('✅ Outcome chart created');
-        }
-
-        // Monthly Chart
-        const monthlyCtx = document.getElementById('monthlyChart');
-        if (monthlyCtx) {
-            new Chart(monthlyCtx, {
-                type: 'line',
-                data: {
-                    labels: {{ months|tojson }},
-                    datasets: [{
-                        label: 'POVs Started',
-                        data: {{ month_data|tojson }},
-                        borderColor: '#6f42c1',
-                        backgroundColor: '#6f42c1'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-            console.log('✅ Monthly chart created');
-        }
-        
-        console.log('🎉 All charts completed!');
-        
-    } catch (error) {
-        console.error('❌ Error creating charts:', error);
-    }
-    
-}, 500); // Wait 500ms for Chart.js to fully load
-
+    // Stage Chart
+    const stageChartData = {{ stage_chart_data|tojson }};
+    new Chart(document.getElementById('stageChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: stageChartData.map(d => d.label),
+            datasets: [{ label: 'Active POVs', data: stageChartData.map(d => d.value), backgroundColor: chartColors }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+    });
+});
 </script>
+<style>
+    .metric-card{color:#fff;border-radius:8px;padding:20px;box-shadow:0 2px 4px rgba(0,0,0,.1);text-align:center;}.metric-number{font-size:36px;font-weight:700}.metric-label{font-size:14px;opacity:.9}.card-ending-soon{background:linear-gradient(45deg,#007bff,#0056b3)}.card-overdue{background:linear-gradient(45deg,#dc3545,#b02a37)}.card-duration{background:linear-gradient(45deg,#17a2b8,#107585)}.card-value{background:linear-gradient(45deg,#28a745,#1e7e34)}.card-tech-wins{background:linear-gradient(45deg,#17a2b8,#107585)}.card-cw-rate{background:linear-gradient(45deg,#ffc107,#d39e00)}.card-tech-win-rate{background:linear-gradient(45deg,#6c757d,#5a6268)}.card-in-progress{background:linear-gradient(45deg,#343a40,#23272b)}.stage-card{background:#f8f9fa;color:#333;border-left:5px solid}.stage-card:nth-child(1){border-color:#17a2b8}.stage-card:nth-child(2){border-color:#007bff}.stage-card:nth-child(3){border-color:#ffc107}.stage-card:nth-child(4){border-color:#28a745}.chart-container{background:#fff;border-radius:8px;padding:25px;box-shadow:0 2px 4px rgba(0,0,0,.1)}
+</style>
 {% endblock %}
