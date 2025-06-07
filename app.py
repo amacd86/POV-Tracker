@@ -263,16 +263,55 @@ def new_pov():
 @app.route('/pov/<int:pov_id>/edit', methods=['GET', 'POST'])
 def edit_pov(pov_id):
     pov = POV.query.get_or_404(pov_id)
-    form = POVForm(obj=pov)
-    
+    # Initialize the form
+    form = POVForm()
+
+    # If the user is SUBMITTING the form, process the new data
     if form.validate_on_submit():
-        # ... (code to update pov object) ...
+        # Check if the roadblock category is being added or removed
+        old_roadblock_category = pov.roadblock_category
+        
+        # Update the pov object with data from the form
+        form.populate_obj(pov)
+        
+        # Custom logic for roadblock dates
+        if form.roadblock_category.data and not old_roadblock_category:
+            # A new roadblock was just added
+            pov.roadblock_created_date = datetime.utcnow().date()
+            pov.roadblock_resolved_date = None
+        elif not form.roadblock_category.data and old_roadblock_category:
+            # A roadblock was just removed (i.e., resolved)
+            pov.roadblock_resolved_date = datetime.utcnow().date()
+        
+        pov.updated_at = datetime.utcnow()
         db.session.commit()
         
         flash('POV updated successfully!', 'success')
-        # <<< FIX #4 >>> Standardize redirect to use pov_id
         return redirect(url_for('pov_detail', pov_id=pov.id))
-    
+
+    # If the user is just LOADING the page, pre-fill the form with existing data
+    elif request.method == 'GET':
+        form.deal_name.data = pov.deal_name
+        form.customer_name.data = pov.customer_name
+        form.customer_email.data = pov.customer_email
+        form.stage.data = pov.current_stage
+        form.status.data = pov.status
+        form.start_date.data = pov.start_date
+        form.expected_end_date.data = pov.projected_end_date
+        form.actual_end_date.data = pov.actual_completion_date
+        form.account_executive.data = pov.assigned_ae
+        form.sales_engineer.data = pov.assigned_se
+        form.technical_win.data = pov.technical_win
+        
+        # Pre-fill roadblock fields
+        form.roadblock_category.data = pov.roadblock_category
+        form.roadblock_severity.data = pov.roadblock_severity
+        form.roadblock_owner.data = pov.roadblock_owner
+        form.roadblock_notes.data = pov.roadblock_notes
+        
+        # Note: We are not pre-filling the general 'notes' field,
+        # as that is for adding new notes, not editing old ones.
+        
     return render_template('pov_form.html', form=form, title='Edit POV', pov=pov)
 
 # <<< FIX #5 >>> Standardize route to use pov_id
