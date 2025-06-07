@@ -107,8 +107,51 @@ def get_pov_metrics():
 # ===================================================================
 @app.route('/')
 def dashboard():
-    # ... Your existing dashboard route ...
-    return "Dashboard placeholder" # Placeholder for brevity
+    try:
+        se_filter = request.args.get('se', '')
+        ae_filter = request.args.get('ae', '')
+        status_filter = request.args.get('status', '')
+        start_date_from = request.args.get('start_date_from', '')
+        start_date_to = request.args.get('start_date_to', '')
+        end_date_from = request.args.get('end_date_from', '')
+        end_date_to = request.args.get('end_date_to', '')
+
+        query = POV.query.filter_by(deleted=False)
+
+        if se_filter:
+            query = query.filter(POV.assigned_se == se_filter)
+        if ae_filter:
+            query = query.filter(POV.assigned_ae == ae_filter)
+        if status_filter:
+            query = query.filter(POV.status == status_filter)
+        # Add date filters if you wish
+
+        povs = query.order_by(POV.start_date.desc()).all()
+        
+        all_ses = sorted([se[0] for se in db.session.query(POV.assigned_se).filter(POV.assigned_se.isnot(None)).distinct().all()])
+        all_aes = sorted([ae[0] for ae in db.session.query(POV.assigned_ae).filter(POV.assigned_ae.isnot(None)).distinct().all()])
+        all_statuses = [('Active', 'Active'), ('On Hold', 'On Hold'), ('Closed Won', 'Closed Won'), ('Closed Lost', 'Closed Lost'), ('Pending Sales', 'Pending Sales')]
+
+    except Exception as e:
+        flash(f'An error occurred while loading the dashboard: {e}', 'danger')
+        # Initialize with empty lists in case of an error
+        povs, all_ses, all_aes, all_statuses = [], [], [], []
+        se_filter, ae_filter, status_filter = '', '', ''
+        start_date_from, start_date_to, end_date_from, end_date_to = '', '', '', ''
+
+
+    return render_template('dashboard.html',
+                           povs=povs,
+                           all_ses=all_ses,
+                           all_aes=all_aes,
+                           all_statuses=all_statuses,
+                           se_filter=se_filter,
+                           ae_filter=ae_filter,
+                           status_filter=status_filter,
+                           start_date_from=start_date_from,
+                           start_date_to=start_date_to,
+                           end_date_from=end_date_from,
+                           end_date_to=end_date_to)
 
 @app.route('/pov/<int:pov_id>')
 def pov_detail(pov_id):
