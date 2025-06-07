@@ -298,6 +298,13 @@ def dashboard():
     end_date_from = request.args.get('end_date_from', '')
     end_date_to = request.args.get('end_date_to', '')
 
+    # Initialize all calculated variables with default values
+    status_data = []
+    chart_data = {'labels': [], 'datasets': [{'data': [], 'backgroundColor': []}]}
+    povs = []
+    all_ses = []
+    all_aes = []
+    all_statuses = []
     try:
         # Only create tables if they do not exist (no drop_all, no destructive init)
         if not os.path.exists(database_path):
@@ -382,6 +389,31 @@ def dashboard():
             chart_data['datasets'][0]['data'].append(count)
             chart_data['datasets'][0]['backgroundColor'].append(color_map.get(status, '#007bff'))
 
+        # Get status distribution for pie chart with percentages
+        if metrics['total_povs'] > 0:
+            won_pct = (metrics['closed_won_count'] / metrics['total_povs']) * 100
+            lost_pct = (metrics['closed_lost_count'] / metrics['total_povs']) * 100
+            in_progress_count = metrics['total_povs'] - metrics['completed_povs']
+            in_progress_pct = (in_progress_count / metrics['total_povs']) * 100
+
+            status_data = [
+                {
+                    'label': f"Closed Won: {metrics['closed_won_count']} ({won_pct:.0f}%)",
+                    'value': metrics['closed_won_count'],
+                    'color': '#28a745'
+                },
+                {
+                    'label': f"Closed Lost: {metrics['closed_lost_count']} ({lost_pct:.0f}%)",
+                    'value': metrics['closed_lost_count'],
+                    'color': '#dc3545'
+                },
+                {
+                    'label': f"In Progress: {in_progress_count} ({in_progress_pct:.0f}%)",
+                    'value': in_progress_count,
+                    'color': '#ffc107'
+                }
+            ]
+
         return render_template('dashboard.html', 
                                povs=povs,
                                all_ses=[se[0] for se in all_ses],
@@ -399,20 +431,7 @@ def dashboard():
                                chart_data=chart_data)
     except Exception as e:
         flash(f'Could not load all dashboard data: {e}', 'danger')
-        povs = []
-        all_ses = []
-        all_aes = []
-        all_statuses = []
-        chart_data = {'labels': [], 'datasets': [{'data': [], 'backgroundColor': []}]}
-        status_data = []
-        # Ensure filters are defined
-        se_filter = se_filter if 'se_filter' in locals() else ''
-        ae_filter = ae_filter if 'ae_filter' in locals() else ''
-        status_filter = status_filter if 'status_filter' in locals() else ''
-        start_date_from = start_date_from if 'start_date_from' in locals() else ''
-        start_date_to = start_date_to if 'start_date_to' in locals() else ''
-        end_date_from = end_date_from if 'end_date_from' in locals() else ''
-        end_date_to = end_date_to if 'end_date_to' in locals() else ''
+        # povs, status_data, chart_data, etc. already initialized above
         return render_template('dashboard.html', 
                                povs=povs, all_ses=all_ses, all_aes=all_aes, all_statuses=all_statuses,
                                se_filter=se_filter, ae_filter=ae_filter, status_filter=status_filter,
