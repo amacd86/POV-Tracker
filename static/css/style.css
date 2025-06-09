@@ -2,3 +2,9 @@
 .metric-value {
     white-space: nowrap;
 }
+
+/* Target the h2 inside the green success card on the analytics page */
+.card.bg-success h2.metric-value {
+    font-size: 2.2rem; /* Slightly smaller than the default */
+    white-space: nowrap; /* Ensures it never breaks into two lines */
+}

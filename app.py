@@ -118,41 +118,51 @@ def get_quarter(pov_date):
     quarter = (pov_date.month - 1) // 3 + 1
     return f"Q{quarter} {pov_date.year}"
 
-def get_pov_metrics():
+def get_pov_metrics(quarter_filter=None):
     today = datetime.utcnow().date()
     won_statuses = ['Closed Won', 'Closed - Won']
     lost_statuses = ['Closed Lost', 'Closed - Lost']
     completed_statuses = won_statuses + lost_statuses
     active_statuses = ['In Trial', 'Pending Sales', 'Active', 'On Hold']
+
     all_povs = POV.query.filter_by(deleted=False).all()
+    
+    # Metrics for ACTIVE POVs (these are always real-time and unaffected by the filter)
     active_povs_list = [p for p in all_povs if p.status in active_statuses]
-    completed_povs_list = [p for p in all_povs if p.status in completed_statuses]
     ending_soon = len([p for p in active_povs_list if p.projected_end_date and today <= p.projected_end_date <= (today + timedelta(days=14))])
     overdue = len([p for p in active_povs_list if p.projected_end_date and p.projected_end_date < today])
     durations = [(p.projected_end_date - p.start_date).days for p in active_povs_list if p.projected_end_date and p.start_date]
     avg_duration = sum(durations) / len(durations) if durations else 0
     total_value = sum(p.deal_amount for p in active_povs_list if p.deal_amount)
+    
+    # Metrics for COMPLETED POVs (these WILL be affected by the quarter filter)
+    all_completed_povs = [p for p in all_povs if p.status in completed_statuses]
+
+    # If a quarter_filter is provided, filter the list of completed POVs
+    if quarter_filter:
+        # We filter based on the quarter of the ACTUAL COMPLETION DATE
+        completed_povs_list = [
+            p for p in all_completed_povs 
+            if p.actual_completion_date and get_quarter(p.actual_completion_date) == quarter_filter
+        ]
+    else:
+        # Otherwise, use all completed POVs
+        completed_povs_list = all_completed_povs
+
+    # All calculations below now use the correctly filtered list of completed POVs
     closed_won_count = len([p for p in completed_povs_list if p.status in won_statuses])
     completed_count = len(completed_povs_list)
     pov_conversion_rate = (closed_won_count / completed_count) * 100 if completed_count > 0 else 0
     technical_wins_count = len([p for p in completed_povs_list if p.technical_win])
     tech_win_rate = (technical_wins_count / completed_count) * 100 if completed_count > 0 else 0
-    stage_counts = {
-        'deployment': len([p for p in active_povs_list if p.current_stage == 'Deployment']),
-        'training_1': len([p for p in active_povs_list if p.current_stage == 'Training 1']),
-        'training_2': len([p for p in active_povs_list if p.current_stage == 'Training 2']),
-        'pov_wrap_up': len([p for p in active_povs_list if p.current_stage == 'POV Wrap-Up']),
-    }
+    
     return {
-        'total_povs': len(all_povs), 'povs_in_progress': len(active_povs_list), 'completed_povs': completed_count,
+        'povs_in_progress': len(active_povs_list), 'completed_povs': completed_count,
         'ending_soon': ending_soon, 'overdue': overdue, 'avg_duration': round(avg_duration, 1),
         'total_value': total_value or 0, 'technical_wins': technical_wins_count, 'closed_won_count': closed_won_count,
-        'pov_conversion_rate': round(pov_conversion_rate, 1), 'tech_win_rate': round(tech_win_rate, 1), 'stage_counts': stage_counts,
+        'pov_conversion_rate': round(pov_conversion_rate, 1), 'tech_win_rate': round(tech_win_rate, 1),
     }
 
-# ===================================================================
-#  ROUTES
-# ===================================================================
 @app.route('/')
 def dashboard():
     povs, all_ses, all_aes, all_statuses = [], [], [], []
@@ -229,10 +239,22 @@ def add_note(pov_id):
 
 @app.route('/analytics')
 def analytics():
-    metrics = get_pov_metrics()
+    # --- Logic for the new Quarter Filter ---
+    selected_quarter = request.args.get('quarter_filter', '')
+    metrics = get_pov_metrics(quarter_filter=selected_quarter)
+    distinct_quarters = db.session.query(POV.quarter_started).filter(POV.quarter_started.isnot(None)).distinct().order_by(POV.quarter_started.desc()).all()
+    quarters_for_filter = [q[0] for q in distinct_quarters]
+
+    # --- RESTORED: Logic for the Charts ---
+    active_statuses = ['In Trial', 'Pending Sales', 'Active', 'On Hold']
     status_counts = db.session.query(POV.status, func.count(POV.id)).filter_by(deleted=False).group_by(POV.status).all()
-    stage_counts_active = db.session.query(POV.current_stage, func.count(POV.id)).filter_by(deleted=False).filter(POV.status.in_(['In Trial', 'Pending Sales'])).group_by(POV.current_stage).all()
-    return render_template('analytics.html', metrics=metrics,
+    stage_counts_active = db.session.query(POV.current_stage, func.count(POV.id)).filter(POV.deleted == False, POV.status.in_(active_statuses)).group_by(POV.current_stage).all()
+    
+    # --- Pass ALL data to the template ---
+    return render_template('analytics.html', 
+                           metrics=metrics, 
+                           quarters=quarters_for_filter, 
+                           selected_quarter=selected_quarter,
                            status_chart_data=[{'label': status, 'value': count} for status, count in status_counts],
                            stage_chart_data=[{'label': stage, 'value': count} for stage, count in stage_counts_active])
 
@@ -417,7 +439,10 @@ def details(metric):
         title = "Closed Won POVs"
         pov_list = POV.query.filter(POV.status == 'Closed Won').all()
         
-    # ... add an 'elif' for every metric tile you create ...
+    elif metric == 'completed_all':
+        title = "All Completed POVs (Won & Lost)"
+        won_lost_statuses = ['Closed Won', 'Closed - Won', 'Closed Lost', 'Closed - Lost']
+        pov_list = POV.query.filter(POV.status.in_(won_lost_statuses)).order_by(POV.actual_completion_date.desc()).all()
 
     return render_template('details.html', title=title, povs=pov_list)
 

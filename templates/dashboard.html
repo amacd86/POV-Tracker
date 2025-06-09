@@ -139,7 +139,17 @@
                             <td>{{ pov.deal_name }}</td>
                             <td>{{ pov.assigned_se }}</td>
                             <td>{{ pov.assigned_ae }}</td>
-                            <td><span class="badge bg-secondary">{{ pov.current_stage }}</span></td>
+                            <td>
+                                <span class="badge fs-6 {%
+                                    if pov.current_stage == 'Completed' %}bg-success{%
+                                    elif pov.current_stage == 'Deployment' %}bg-primary{%
+                                    elif 'Training' in pov.current_stage %}bg-info text-dark{%
+                                    elif pov.current_stage == 'POV Wrap-Up' %}bg-warning text-dark{%
+                                    else %}bg-secondary{%
+                                endif %}">
+                                    {{ pov.current_stage }}
+                                </span>
+                            </td>
                             
                             <td class="text-nowrap">{{ pov.start_date.strftime('%m/%d/%Y') if pov.start_date }}</td>
                             <td class="text-nowrap">{{ pov.projected_end_date.strftime('%m/%d/%Y') if pov.projected_end_date }}</td>

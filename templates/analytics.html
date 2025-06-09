@@ -4,6 +4,30 @@
 {% block page_title %}POV Analytics{% endblock %}
 
 {% block content %}
+<h1 class="mb-4">POV Analytics</h1>
+
+<div class="card bg-light mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('analytics') }}" class="row align-items-end g-3">
+            <div class="col-md-4">
+                <label for="quarter_filter" class="form-label">Filter by Quarter of Completion</label>
+                <select name="quarter_filter" id="quarter_filter" class="form-select">
+                    <option value="">All Time</option>
+                    {% for quarter in quarters %}
+                        <option value="{{ quarter }}" {% if quarter == selected_quarter %}selected{% endif %}>
+                            {{ quarter }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary">Apply Filter</button>
+                <a href="{{ url_for('analytics') }}" class="btn btn-outline-secondary">Reset</a>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="card shadow-sm">
     <div class="card-header">
         <div class="row align-items-center">
@@ -67,22 +91,28 @@
             </div>
 
             <div class="col-md-3">
-                <a href="{{ url_for('details', metric='closed_won') }}" class="text-decoration-none text-dark">
+                <a href="{{ url_for('details', metric='completed_all') }}" class="text-decoration-none text-dark">
                     <div class="card h-100 shadow-sm bg-warning">
                         <div class="card-body text-center">
                             <h2 class="display-5 fw-bold">{{ metrics.pov_conversion_rate }}%</h2>
                             <p class="card-text">Conversion to Closed Won</p>
+                            <p class="card-text small" style="opacity: 0.8;">
+                                ({{ metrics.closed_won_count }} Won / {{ metrics.completed_povs }} Completed)
+                            </p>
                         </div>
                     </div>
                 </a>
             </div>
 
             <div class="col-md-3">
-                <a href="{{ url_for('details', metric='technical_wins') }}" class="text-decoration-none text-dark">
+                <a href="{{ url_for('details', metric='completed_all') }}" class="text-decoration-none text-dark">
                     <div class="card h-100 shadow-sm bg-warning">
                         <div class="card-body text-center">
                             <h2 class="display-5 fw-bold">{{ metrics.tech_win_rate }}%</h2>
                             <p class="card-text">Technical Win Rate</p>
+                            <p class="card-text small" style="opacity: 0.8;">
+                                ({{ metrics.technical_wins }} Tech Wins / {{ metrics.completed_povs }} Completed)
+                            </p>
                         </div>
                     </div>
                 </a>
