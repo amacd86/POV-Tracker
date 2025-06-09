@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Roadblock Analytics</h1>
+
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Total Active Roadblocks</h5>
+                    <p class="card-text fs-2">{{ active_roadblocks_count }}</p>
+                </div>
+            </div>
+        </div>
+        </div>
+
+    <div class="row mt-5">
+        <div class="col-md-8">
+            <h5>Roadblocks by Category and Severity</h5>
+            <canvas id="categorySeverityChart"></canvas>
+        </div>
+        <div class="col-md-4">
+            <h5>Roadblock Ownership</h5>
+            <canvas id="ownershipChart"></canvas>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col">
+            <h3 class="mb-3">Stagnation Analysis (Action List)</h3>
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>POV Name</th>
+                        <th>Category</th>
+                        <th>Severity</th>
+                        <th>Owner</th>
+                        <th>Days Stagnant</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for roadblock in stagnant_roadblocks %}
+                    <tr>
+                        <td>{{ roadblock[0] }}</td>
+                        <td>{{ roadblock[1] }}</td>
+                        <td><span class="badge bg-danger">{{ roadblock[2] }}</span></td>
+                        <td>{{ roadblock[3] }}</td>
+                        <td>{{ '%.1f'| format(roadblock[5]) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // 1. Chart: Roadblocks by Category & Severity (Stacked Bar Chart)
+    const ctxCategory = document.getElementById('categorySeverityChart');
+    // Prepare data from Flask
+    const chartDataCategory = {{ chart_data_category|tojson }};
+    const categoryLabels = Object.keys(chartDataCategory);
+    const highData = categoryLabels.map(cat => chartDataCategory[cat]['High'] || 0);
+    const mediumData = categoryLabels.map(cat => chartDataCategory[cat]['Medium'] || 0);
+    const lowData = categoryLabels.map(cat => chartDataCategory[cat]['Low'] || 0);
+
+    const categoryData = {
+        labels: categoryLabels,
+        datasets: [{
+            label: 'High Severity',
+            data: highData,
+            backgroundColor: 'rgba(255, 99, 132, 0.7)',
+        }, {
+            label: 'Medium Severity',
+            data: mediumData,
+            backgroundColor: 'rgba(255, 206, 86, 0.7)',
+        }, {
+            label: 'Low Severity',
+            data: lowData,
+            backgroundColor: 'rgba(75, 192, 192, 0.7)',
+        }]
+    };
+
+    new Chart(ctxCategory, {
+        type: 'bar',
+        data: categoryData,
+        options: {
+            scales: {
+                x: { stacked: true },
+                y: { stacked: true, beginAtZero: true }
+            }
+        }
+    });
+
+    // 2. Chart: Roadblock Ownership (Donut Chart)
+    const ctxOwner = document.getElementById('ownershipChart');
+    const chartDataOwnership = {{ chart_data_ownership|tojson }};
+    const ownerLabels = Object.keys(chartDataOwnership);
+    const ownerValues = ownerLabels.map(k => chartDataOwnership[k]);
+
+    const ownerData = {
+        labels: ownerLabels,
+        datasets: [{
+            label: '# of Roadblocks',
+            data: ownerValues,
+            backgroundColor: [
+              'rgba(54, 162, 235, 0.7)',
+              'rgba(255, 99, 132, 0.7)',
+              'rgba(75, 192, 192, 0.7)',
+              'rgba(255, 206, 86, 0.7)'
+            ]
+        }]
+    };
+
+    new Chart(ctxOwner, {
+        type: 'doughnut',
+        data: ownerData
+    });
+</script>
+{% endblock %}

@@ -16,61 +16,92 @@
 
     <div class="card-body">
         <div class="row">
-            <div class="col-md-7">
-                <h6 class="border-bottom pb-2 mb-3">POV Details</h6>
-                <div class="row mb-2">
-                    <div class="col-sm-6"><strong>Customer:</strong> {{ pov.customer_name }}</div>
-                    <div class="col-sm-6"><strong>Status:</strong> <span class="badge bg-primary">{{ pov.status }}</span></div>
-                </div>
-                <div class="row mb-2">
-                    <div class="col-sm-6"><strong>Assigned SE:</strong> {{ pov.assigned_se }}</div>
-                    <div class="col-sm-6"><strong>Assigned AE:</strong> {{ pov.assigned_ae }}</div>
-                </div>
-                <div class="row mb-3">
-                    <div class="col-sm-6"><strong>Start Date:</strong> {{ pov.start_date.strftime('%m/%d/%Y') if pov.start_date }}</div>
-                    <div class="col-sm-6"><strong>Projected End:</strong> {{ pov.projected_end_date.strftime('%m/%d/%Y') if pov.projected_end_date }}</div>
-                </div>
+            <div class="col-md-6">
+                <h5>POV Details</h5>
+                <hr>
+                <dl class="row">
+                    <dt class="col-sm-4">Customer</dt>
+                    <dd class="col-sm-8">{{ pov.customer_name }}</dd>
 
-                {% if pov.roadblock_category %}
-                <h6 class="border-bottom pb-2 mb-3 mt-4">Roadblock Details</h6>
-                <div class="row">
-                    <div class="col-sm-4"><strong>Category:</strong> {{ pov.roadblock_category }}</div>
-                    <div class="col-sm-4"><strong>Severity:</strong> {{ pov.roadblock_severity }}</div>
-                    <div class="col-sm-4"><strong>Owner:</strong> {{ pov.roadblock_owner }}</div>
-                </div>
-                <div class="mt-2">
-                    <strong>Days Stagnant:</strong> 
-                    <span class="badge {% if pov.days_stagnant > 14 %}bg-danger{% elif pov.days_stagnant > 7 %}bg-warning{% else %}bg-secondary{% endif %}">{{ pov.days_stagnant }}</span>
-                </div>
-                {% if pov.roadblock_notes %}
-                    <div class="mt-2"><strong>Notes:</strong> {{ pov.roadblock_notes }}</div>
-                {% endif %}
-                {% else %}
-                 <p class="text-muted">No roadblocks recorded.</p>
-                {% endif %}
+                    <dt class="col-sm-4">Status</dt>
+                    <dd class="col-sm-8"><span class="badge bg-primary">{{ pov.status }}</span></dd>
+
+                    <dt class="col-sm-4">Assigned SE</dt>
+                    <dd class="col-sm-8">{{ pov.assigned_se or 'N/A' }}</dd>
+                    
+                    <dt class="col-sm-4">Assigned AE</dt>
+                    <dd class="col-sm-8">{{ pov.assigned_ae }}</dd>
+
+                    <dt class="col-sm-4">Start Date</dt>
+                    <dd class="col-sm-8">{{ pov.start_date.strftime('%m/%d/%Y') if pov.start_date }}</dd>
+
+                    <dt class="col-sm-4">Projected End</dt>
+                    <dd class="col-sm-8">{{ pov.projected_end_date.strftime('%m/%d/%Y') if pov.projected_end_date }}</dd>
+
+                    <dt class="col-sm-4">Deal Amount</dt>
+                    <dd class="col-sm-8 fw-bold">${{ '{:,.0f}'.format(pov.deal_amount) if pov.deal_amount else 'N/A' }}</dd>
+                    
+                    <dt class="col-sm-4">Quarter Started</dt>
+                    <dd class="col-sm-8">{{ pov.quarter_started or 'N/A' }}</dd>
+
+                    <dt class="col-sm-4">Technical Win</dt>
+                    <dd class="col-sm-8">
+                        {% if pov.technical_win %}
+                            <span class="badge bg-success">Yes</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </dd>
+                </dl>
+
+                <h5>Success Criteria</h5>
+                <hr>
+                <p class="text-muted fst-italic">
+                    {{ pov.success_criteria|nl2br or 'No success criteria defined.' }}
+                </p>
+
             </div>
 
-            <div class="col-md-5 border-start">
-                <h6 class="border-bottom pb-2 mb-3">POV Notes</h6>
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <form method="post" action="{{ url_for('add_note', pov_id=pov.id) }}">
-                            {{ note_form.hidden_tag() }}
-                            <div class="mb-2">{{ note_form.content(class="form-control", rows=2, placeholder="Add a new note...") }}</div>
-                            <button type="submit" class="btn btn-primary btn-sm">Add Note</button>
-                        </form>
+            <div class="col-md-6">
+                <h5>Roadblock Status</h5>
+                <hr>
+                {% if pov.roadblock_category %}
+                    <div class="alert alert-warning">
+                        <p class="mb-1"><strong>Category:</strong> {{ pov.roadblock_category }}</p>
+                        <p class="mb-1"><strong>Severity:</strong> {{ pov.roadblock_severity }}</p>
+                        <p class="mb-1"><strong>Owner:</strong> {{ pov.roadblock_owner }}</p>
+                        <p class="mb-1"><strong>Details:</strong> {{ pov.roadblock_notes or 'N/A' }}</p>
+                        <hr>
+                        {% if pov.roadblock_resolved_date %}
+                            <p class="mb-0 text-success"><strong>Resolved on: {{ pov.roadblock_resolved_date.strftime('%m/%d/%Y') }}</strong></p>
+                        {% else %}
+                            <p class="mb-0 text-danger"><strong>This is an active roadblock.</strong></p>
+                        {% endif %}
                     </div>
-                </div>
-
-                <div class="notes-timeline">
+                {% else %}
+                    <p class="text-muted">No roadblocks recorded.</p>
+                {% endif %}
+                
+                <h5 class="mt-4">POV Notes</h5>
+                <hr>
+                <form action="{{ url_for('add_note', pov_id=pov.id) }}" method="post">
+                    {{ note_form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ note_form.content(class="form-control") }}
+                    </div>
+                    {{ note_form.submit(class="btn btn-primary") }}
+                </form>
+                <div class="mt-3">
                     {% for note in pov.notes|sort(attribute='timestamp', reverse=True) %}
-                    <div class="card mb-2">
-                        <div class="card-header bg-light py-1 small text-muted">{{ note.timestamp.strftime('%m/%d/%Y %I:%M %p') }}</div>
-                        <div class="card-body py-2">{{ note.content|nl2br }}</div>
-                    </div>
+                        <div class="card mb-2">
+                            <div class="card-body p-2">
+                                <p class="card-text mb-1">{{ note.content }}</p>
+                                <small class="text-muted">{{ note.timestamp.strftime('%Y-%m-%d %I:%M %p') }}</small>
+                            </div>
+                        </div>
                     {% else %}
-                    <p class="text-muted">No notes added yet.</p>
-                    {% endfor %}
+                        <p class="text-muted">No notes added yet.</p>
+                    {% endfor %} 
                 </div>
             </div>
         </div>

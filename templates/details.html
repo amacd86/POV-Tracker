@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1 class="mb-0">{{ title }}</h1>
+        <a href="{{ url_for('analytics') }}" class="btn btn-outline-secondary">
+            &larr; Back to Analytics
+        </a>
+    </div>
+
+    <p>Showing {{ povs|length }} records.</p>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Deal Name</th>
+                        <th>SE</th>
+                        <th>AE</th>
+                        <th>Stage</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pov in povs %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('pov_detail', pov_id=pov.id) }}">{{ pov.deal_name }}</a>
+                        </td>
+                        <td>{{ pov.assigned_se }}</td>
+                        <td>{{ pov.assigned_ae }}</td>
+                        <td>{{ pov.current_stage }}</td>
+                        <td>{{ pov.projected_end_date.strftime('%m/%d/%Y') if pov.projected_end_date }}</td>
+                        <td><span class="badge bg-primary">{{ pov.status }}</span></td>
+                        <td>
+                            {% if pov.deal_amount %}
+                                ${{ '{:,.0f}'.format(pov.deal_amount) }}
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">No POVs match this criteria.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

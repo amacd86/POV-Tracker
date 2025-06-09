@@ -12,26 +12,92 @@
         </div>
     </div>
     <div class="card-body">
-        <div class="row">
-            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-ending-soon"><div class="metric-number">{{ metrics.ending_soon }}</div><div class="metric-label">POVs ending in next 2 weeks</div></div></div>
-            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-overdue"><div class="metric-number">{{ metrics.overdue }}</div><div class="metric-label">POVs past end date</div></div></div>
-            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-duration"><div class="metric-number">{{ metrics.avg_duration }}</div><div class="metric-label">Days per active POV</div></div></div>
-            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-value"><div class="metric-number">${{ "{:,.0f}".format(metrics.total_value) }}</div><div class="metric-label">Total Value of Active POVs</div></div></div>
-        </div>
+        <div class="row g-4">
+            <div class="col-md-3">
+                <a href="{{ url_for('details', metric='ending_soon') }}" class="text-decoration-none">
+                    <div class="card h-100 shadow-sm bg-primary text-white">
+                        <div class="card-body text-center">
+                            <h2 class="display-5 fw-bold">{{ metrics.ending_soon }}</h2>
+                            <p class="card-text">POVs ending in next 2 weeks</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
 
-        <div class="row">
-            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-tech-wins"><div class="metric-number">{{ metrics.technical_wins }}</div><div class="metric-label">Completed Technical Wins</div></div></div>
-            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-cw-rate"><div class="metric-number">{{ metrics.pov_conversion_rate }}%</div><div class="metric-label">Conversion to Closed Won</div></div></div>
-            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-tech-win-rate"><div class="metric-number">{{ metrics.tech_win_rate }}%</div><div class="metric-label">Technical Win Rate</div></div></div>
-            <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card card-in-progress"><div class="metric-number">{{ metrics.povs_in_progress }}</div><div class="metric-label">Active POV Count</div></div></div>
-        </div>
-        
-        <h5 class="mt-4">Current Stage Distribution (Active POVs)</h5>
-        <div class="row">
-             <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card stage-card"><div class="metric-number">{{ metrics.stage_counts.deployment }}</div><div class="metric-label">Deployment</div></div></div>
-             <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card stage-card"><div class="metric-number">{{ metrics.stage_counts.training_1 }}</div><div class="metric-label">Training 1</div></div></div>
-             <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card stage-card"><div class="metric-number">{{ metrics.stage_counts.training_2 }}</div><div class="metric-label">Training 2</div></div></div>
-             <div class="col-lg-3 col-md-6 mb-4"><div class="metric-card stage-card"><div class="metric-number">{{ metrics.stage_counts.pov_wrap_up }}</div><div class="metric-label">POV Wrap-Up</div></div></div>
+            <div class="col-md-3">
+                <a href="{{ url_for('details', metric='overdue') }}" class="text-decoration-none">
+                    <div class="card h-100 shadow-sm bg-danger text-white">
+                        <div class="card-body text-center">
+                            <h2 class="display-5 fw-bold">{{ metrics.overdue }}</h2>
+                            <p class="card-text">POVs past end date</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card h-100 shadow-sm bg-info text-white">
+                    <div class="card-body text-center">
+                        <h2 class="display-5 fw-bold">{{ metrics.avg_duration }}</h2>
+                        <p class="card-text">Days per active POV</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <a href="{{ url_for('details', metric='active') }}" class="text-decoration-none">
+                    <div class="card h-100 shadow-sm bg-success text-white">
+                        <div class="card-body text-center">
+                            <h2 class="display-5 fw-bold metric-value">${{ '{:,.0f}'.format(metrics.total_value) }}</h2>
+                            <p class="card-text">Total Value of Active POVs</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-3">
+                <a href="{{ url_for('details', metric='technical_wins') }}" class="text-decoration-none">
+                    <div class="card h-100 shadow-sm bg-dark text-white">
+                        <div class="card-body text-center">
+                            <h2 class="display-5 fw-bold">{{ metrics.technical_wins }}</h2>
+                            <p class="card-text">Completed Technical Wins</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-3">
+                <a href="{{ url_for('details', metric='closed_won') }}" class="text-decoration-none text-dark">
+                    <div class="card h-100 shadow-sm bg-warning">
+                        <div class="card-body text-center">
+                            <h2 class="display-5 fw-bold">{{ metrics.pov_conversion_rate }}%</h2>
+                            <p class="card-text">Conversion to Closed Won</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-3">
+                <a href="{{ url_for('details', metric='technical_wins') }}" class="text-decoration-none text-dark">
+                    <div class="card h-100 shadow-sm bg-warning">
+                        <div class="card-body text-center">
+                            <h2 class="display-5 fw-bold">{{ metrics.tech_win_rate }}%</h2>
+                            <p class="card-text">Technical Win Rate</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-md-3">
+                <a href="{{ url_for('details', metric='active') }}" class="text-decoration-none">
+                    <div class="card h-100 shadow-sm bg-secondary text-white">
+                        <div class="card-body text-center">
+                            <h2 class="display-5 fw-bold">{{ metrics.povs_in_progress }}</h2>
+                            <p class="card-text">Active POV Count</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
 
         <div class="row mt-4">

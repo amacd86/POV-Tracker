@@ -13,192 +13,100 @@
                     <h3>{{ title or 'POV Form' }}</h3>
                 </div>
                 <div class="card-body">
-                    <form method="POST">
-                        <!-- Basic Information -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="deal_name" class="form-label">Deal Name *</label>
-                                    <input type="text" class="form-control" id="deal_name" name="deal_name" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="customer_name" class="form-label">Customer Contact Name *</label>
-                                    <input type="text" class="form-control" id="customer_name" name="customer_name" required>
-                                </div>
-                            </div>
-                        </div>
+                    <form method="post" novalidate>
+                        {{ form.hidden_tag() }}
 
-                        <div class="row">
+                        <div class="row g-3">
                             <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="customer_email" class="form-label">Customer Email</label>
-                                    <input type="email" class="form-control" id="customer_email" name="customer_email">
-                                </div>
+                                {{ form.deal_name.label(class="form-label") }}
+                                {{ form.deal_name(class="form-control") }}
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="deal_amount" class="form-label">Deal Amount ($)</label>
-                                    <input type="number" class="form-control" id="deal_amount" name="deal_amount" step="0.01">
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Team Assignment -->
-                        <div class="row">
                             <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="assigned_ae" class="form-label">Account Executive *</label>
-                                    <input type="text" class="form-control" id="assigned_ae" name="assigned_ae" required>
-                                </div>
+                                {{ form.customer_name.label(class="form-label") }}
+                                {{ form.customer_name(class="form-control") }}
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="assigned_se" class="form-label">Sales Engineer</label>
-                                    <input type="text" class="form-control" id="assigned_se" name="assigned_se">
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- POV Details -->
-                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.assigned_ae.label(class="form-label") }}
+                                {{ form.assigned_ae(class="form-control") }}
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form.assigned_se.label(class="form-label") }}
+                                {{ form.assigned_se(class="form-control") }}
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form.current_stage.label(class="form-label") }}
+                                {{ form.current_stage(class="form-select") }}
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form.status.label(class="form-label") }}
+                                {{ form.status(class="form-select") }}
+                            </div>
+
                             <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    <label for="current_stage" class="form-label">Current Stage *</label>
-                                    <select class="form-control" id="current_stage" name="current_stage" required>
-                                        <option value="">Select Stage</option>
-                                        <option value="Initial Contact">Initial Contact</option>
-                                        <option value="Discovery">Discovery</option>
-                                        <option value="Deployment">Deployment</option>
-                                        <option value="Training 1">Training 1</option>
-                                        <option value="Training 2">Training 2</option>
-                                        <option value="POV Wrap-Up">POV Wrap-Up</option>
-                                        <option value="Evaluation">Evaluation</option>
-                                    </select>
-                                </div>
+                                {{ form.start_date.label(class="form-label") }}
+                                {{ form.start_date(class="form-control") }}
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    <label for="status" class="form-label">Status *</label>
-                                    <select class="form-control" id="status" name="status" required>
-                                        <option value="">Select Status</option>
-                                        <option value="Active">Active</option>
-                                        <option value="On Hold">On Hold</option>
-                                        <option value="Closed Won">Closed Won</option>
-                                        <option value="Closed Lost">Closed Lost</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-check mt-4">
-                                    <input type="checkbox" class="form-check-input" id="technical_win" name="technical_win" value="1">
-                                    <label class="form-check-label" for="technical_win">
-                                        Technical Win
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
 
-                        <!-- Dates -->
-                        <div class="row">
                             <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    <label for="start_date" class="form-label">Start Date *</label>
-                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
-                                </div>
+                                {{ form.projected_end_date.label(class="form-label") }}
+                                {{ form.projected_end_date(class="form-control") }}
                             </div>
+                            
                             <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    <label for="projected_end_date" class="form-label">Projected End Date</label>
-                                    <input type="date" class="form-control" id="projected_end_date" name="projected_end_date">
-                                </div>
+                                {{ form.actual_completion_date.label(class="form-label") }}
+                                {{ form.actual_completion_date(class="form-control") }}
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group mb-3">
-                                    <label for="actual_completion_date" class="form-label">Actual Completion Date</label>
-                                    <input type="date" class="form-control" id="actual_completion_date" name="actual_completion_date">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Enhanced Roadblock Section -->
-                        <div class="card mt-4">
-                            <div class="card-header">
-                                <h5>🚧 Roadblock Information (Optional)</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="form-group mb-3">
-                                            <label for="roadblock_category" class="form-label">Category</label>
-                                            <select class="form-control" id="roadblock_category" name="roadblock_category">
-                                                <option value="">No Roadblock</option>
-                                                <option value="Technical">🔧 Technical</option>
-                                                <option value="Budget">💰 Budget</option>
-                                                <option value="Timeline">⏰ Timeline</option>
-                                                <option value="Decision Maker">👥 Decision Maker</option>
-                                                <option value="Competitive">⚔️ Competitive</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group mb-3">
-                                            <label for="roadblock_severity" class="form-label">Severity</label>
-                                            <select class="form-control" id="roadblock_severity" name="roadblock_severity">
-                                                <option value="">Select Severity</option>
-                                                <option value="Low">🟢 Low</option>
-                                                <option value="Medium">🟡 Medium</option>
-                                                <option value="High">🔴 High</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="form-group mb-3">
-                                            <label for="roadblock_owner" class="form-label">Owner</label>
-                                            <select class="form-control" id="roadblock_owner" name="roadblock_owner">
-                                                <option value="">Select Owner</option>
-                                                <option value="AE">👔 AE</option>
-                                                <option value="SE">🛠️ SE</option>
-                                                <option value="Leadership">👑 Leadership</option>
-                                                <option value="Engineering">⚙️ Engineering</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group mb-3">
-                                    <label for="roadblock_notes" class="form-label">Roadblock Notes</label>
-                                    <textarea class="form-control" id="roadblock_notes" name="roadblock_notes" rows="3" placeholder="Describe the roadblock and action steps..."></textarea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Additional Information -->
-                        <div class="row mt-4">
+                            
                             <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="success_criteria" class="form-label">Success Criteria</label>
-                                    <textarea class="form-control" id="success_criteria" name="success_criteria" rows="3" placeholder="What defines success for this POV?"></textarea>
+                                {{ form.deal_amount.label(class="form-label") }}
+                                {{ form.deal_amount(class="form-control") }}
+                            </div>
+
+                            <div class="col-md-6 d-flex align-items-end">
+                                <div class="form-check mb-2">
+                                    {{ form.technical_win(class="form-check-input") }}
+                                    {{ form.technical_win.label(class="form-check-label") }}
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="notes" class="form-label">General Notes</label>
-                                    <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Additional notes..."></textarea>
-                                </div>
+
+                            <div class="col-12">
+                                {{ form.success_criteria.label(class="form-label") }}
+                                {{ form.success_criteria(class="form-control") }}
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <h5 class="col-12">Roadblock Information</h5>
+                            
+                            <div class="col-md-4">
+                                {{ form.roadblock_category.label(class="form-label") }}
+                                {{ form.roadblock_category(class="form-select") }}
+                            </div>
+
+                            <div class="col-md-4">
+                                {{ form.roadblock_severity.label(class="form-label") }}
+                                {{ form.roadblock_severity(class="form-select") }}
+                            </div>
+
+                            <div class="col-md-4">
+                                {{ form.roadblock_owner.label(class="form-label") }}
+                                {{ form.roadblock_owner(class="form-select") }}
+                            </div>
+
+                            <div class="col-12">
+                                {{ form.roadblock_notes.label(class="form-label") }}
+                                {{ form.roadblock_notes(class="form-control") }}
                             </div>
                         </div>
 
-                        <!-- Legacy Roadblock Fields (for compatibility) -->
-                        <div class="form-group mb-3">
-                            <label for="roadblocks" class="form-label">Legacy Roadblocks</label>
-                            <textarea class="form-control" id="roadblocks" name="roadblocks" rows="2" placeholder="Any existing roadblock notes..."></textarea>
-                        </div>
-
-                        <!-- Submit Buttons -->
-                        <div class="form-group mt-4">
-                            <button type="submit" class="btn btn-primary">Save POV</button>
-                            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary ml-2">Cancel</a>
+                        <div class="mt-4">
+                            {{ form.submit(class="btn btn-primary") }}
+                            <a href="{{ url_for('pov_detail', pov_id=pov.id) }}" class="btn btn-secondary">Cancel</a>
                         </div>
                     </form>
                 </div>

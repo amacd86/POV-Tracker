@@ -1,0 +1,4 @@
+/* Prevents large numbers in metric cards from wrapping to a new line */
+.metric-value {
+    white-space: nowrap;
+}

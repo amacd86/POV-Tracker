@@ -115,98 +115,60 @@
             <!-- POVs Table -->
             {% if povs %}
             <div class="table-responsive">
-                <table class="table table-hover table-striped">
+                <table class="table table-hover align-middle" style="min-width: 1200px;">
                     <thead>
-                        <tr>
-                            <th><input type="checkbox" id="select-all-checkbox"></th>
+                        <tr class="table-light">
+                            <th style="width: 1%;"><input class="form-check-input" type="checkbox" id="select-all-checkbox"></th>
                             <th>Deal Name</th>
                             <th>SE</th>
                             <th>AE</th>
                             <th>Stage</th>
-                            <th>Start</th>
-                            <th>End</th>
+                            <th class="text-nowrap">Start</th>
+                            <th class="text-nowrap">End</th>
                             <th>Status</th>
-                            <th>Price ($)</th>
+                            <th class="text-nowrap">Price ($)</th>
+                            <th>Quarter</th>
                             <th>RB Resolved</th>
-                            <th class="text-center">Actions</th>
+                            <th class="text-nowrap">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for pov in povs %}
                         <tr>
-                            <td>
-                                <input type="checkbox" name="selected_povs" value="{{ pov.id }}" class="pov-checkbox">
-                            </td>
+                            <td><input class="form-check-input" type="checkbox" name="selected_povs" value="{{ pov.id }}"></td>
                             <td>{{ pov.deal_name }}</td>
                             <td>{{ pov.assigned_se }}</td>
                             <td>{{ pov.assigned_ae }}</td>
+                            <td><span class="badge bg-secondary">{{ pov.current_stage }}</span></td>
+                            
+                            <td class="text-nowrap">{{ pov.start_date.strftime('%m/%d/%Y') if pov.start_date }}</td>
+                            <td class="text-nowrap">{{ pov.projected_end_date.strftime('%m/%d/%Y') if pov.projected_end_date }}</td>
+                            
+                            <td><span class="badge {% if pov.status == 'Closed Won' %}bg-success{% else %}bg-primary{% endif %}">{{ pov.status }}</span></td>
+                            
+                            <td class="text-nowrap">${{ '{:,.0f}'.format(pov.deal_amount) if pov.deal_amount else '—' }}</td>
+                            
+                            <td>{{ pov.quarter_started or '—' }}</td>
                             <td>
-                                <span class="badge
-                                    {% if pov.current_stage == 'Deployment' %}bg-info
-                                    {% elif pov.current_stage == 'Training 1' %}bg-primary
-                                    {% elif pov.current_stage == 'Training 2' %}bg-warning
-                                    {% elif pov.current_stage == 'POV Wrap-Up' %}bg-success
-                                    {% elif pov.current_stage == 'Completed' %}bg-success text-white
-                                    {% elif pov.current_stage == 'Tech Call' %}bg-secondary
-                                    {% endif %}">
-                                    {{ pov.current_stage }}
-                                </span>
-                            </td>
-                            <td>{{ pov.start_date.strftime('%m/%d/%Y') }}</td>
-                            <td>{{ pov.projected_end_date.strftime('%m/%d/%Y') if pov.projected_end_date else '' }}</td>
-                            <td>
-                                <span class="badge
-                                    {% if pov.status == 'In Trial' %}bg-primary text-white
-                                    {% elif pov.status == 'Pending Sales' %}bg-secondary text-white  
-                                    {% elif pov.status == 'Closed Won' %}bg-success text-white
-                                    {% elif pov.status == 'Closed Lost' %}bg-danger text-white
-                                    {% elif pov.status == 'On Hold' %}bg-warning text-dark
-                                    {% endif %}">
-                                    {{ pov.status }}
-                                </span>
-                            </td>
-                            <td>{% if pov.deal_amount %}${{ "%.2f"|format(pov.deal_amount) }}{% else %}-{% endif %}</td>
-                            <td class="text-center">
-                                {% if pov.roadblocks %}
-                                    {% if pov.overcome_roadblocks %}
-                                        <i class="fas fa-check-circle text-success" data-bs-toggle="tooltip" title="Roadblocks Overcome"></i>
-                                    {% else %}
-                                        <i class="fas fa-exclamation-triangle text-warning" data-bs-toggle="tooltip" title="Roadblocks Present"></i>
-                                    {% endif %}
+                                {% if pov.roadblock_category and pov.roadblock_resolved_date %}
+                                    <span class="text-success" data-bs-toggle="tooltip" title="Resolved on {{ pov.roadblock_resolved_date.strftime('%m/%d/%Y') }}">✔️</span>
+                                {% elif pov.roadblock_category %}
+                                    <span class="badge bg-danger" data-bs-toggle="tooltip" title="{{ pov.roadblock_category }}: {{ pov.roadblock_notes or 'No details' }}">Roadblock</span>
                                 {% else %}
-                                    <i class="fas fa-minus text-muted" data-bs-toggle="tooltip" title="No Roadblocks"></i>
+                                    <span data-bs-toggle="tooltip" title="No Roadblocks">—</span>
                                 {% endif %}
                             </td>
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm">
-                                    <a href="{{ url_for('pov_detail', pov_id=pov.id) }}" class="btn btn-outline-primary" data-bs-toggle="tooltip" title="View Details"><i class="fas fa-eye"></i></a>
-                                    <a href="{{ url_for('edit_pov', pov_id=pov.id) }}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Edit POV"><i class="fas fa-edit"></i></a>
 
-                                    <form action="{{ url_for('delete_pov', pov_id=pov.id) }}" method="post" style="display: inline;" onsubmit="return confirm('Are you sure you want to move this POV to trash?');">
-                                        <button type="submit" class="btn btn-outline-danger" data-bs-toggle="tooltip" title="Delete POV"><i class="fas fa-trash"></i></button>
-                                    </form>
-
-                                    {% if pov.status in ['Active', 'In Trial', 'Pending Sales', 'On Hold'] %}
-                                    <div class="btn-group btn-group-sm">
-                                        <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown" title="Mark Complete"><i class="fas fa-check"></i></button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <form action="{{ url_for('mark_complete', pov_id=pov.id) }}" method="post" class="d-inline">
-                                                    <input type="hidden" name="status" value="Closed Won">
-                                                    <button type="submit" class="dropdown-item">Mark Won</button>
-                                                </form>
-                                            </li>
-                                            <li>
-                                                <form action="{{ url_for('mark_complete', pov_id=pov.id) }}" method="post" class="d-inline">
-                                                    <input type="hidden" name="status" value="Closed Lost">
-                                                    <button type="submit" class="dropdown-item">Mark Lost</button>
-                                                </form>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                    {% endif %}
+                            <td class="text-nowrap">
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('pov_detail', pov_id=pov.id) }}" class="btn btn-outline-primary btn-sm" title="View">👁️</a>
+                                    <a href="{{ url_for('edit_pov', pov_id=pov.id) }}" class="btn btn-outline-secondary btn-sm" title="Edit">✏️</a>
                                 </div>
                             </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="12" class="text-center">No POVs found.</td>
                         </tr>
                         {% endfor %}
                     </tbody>

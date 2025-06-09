@@ -9,6 +9,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, DateField, TextAreaField, BooleanField, SubmitField, FloatField
 from wtforms.validators import DataRequired, Email, Optional
 from sqlalchemy import func
+from flask_migrate import Migrate
 
 # ===================================================================
 #  APP & DB CONFIGURATION
@@ -22,6 +23,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{os.path.join(instance_path,
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+migrate = Migrate(app, db)
 
 # ===================================================================
 #  DATABASE MODELS
@@ -51,6 +53,8 @@ class POV(db.Model):
     roadblock_notes = db.Column(db.Text)
     roadblock_created_date = db.Column(db.Date)
     roadblock_resolved_date = db.Column(db.Date)
+    quarter_started = db.Column(db.String(10), index=True) # index=True makes filtering faster
+
     notes = db.relationship('Note', backref='pov', lazy=True, cascade="all, delete-orphan")
 
     @property
@@ -106,6 +110,13 @@ def nl2br_filter(s):
         from markupsafe import Markup
         return Markup(s.replace('\n', '<br>\n'))
     return s
+
+def get_quarter(pov_date):
+    """Calculates the quarter string (e.g., 'Q1 2025') from a date object."""
+    if not pov_date:
+        return None
+    quarter = (pov_date.month - 1) // 3 + 1
+    return f"Q{quarter} {pov_date.year}"
 
 def get_pov_metrics():
     today = datetime.utcnow().date()
@@ -179,6 +190,7 @@ def new_pov():
     if form.validate_on_submit():
         pov = POV()
         form.populate_obj(pov)
+        pov.quarter_started = get_quarter(pov.start_date)
         db.session.add(pov)
         db.session.commit()
         flash('POV created successfully!', 'success')
@@ -192,6 +204,7 @@ def edit_pov(pov_id):
     if form.validate_on_submit():
         old_roadblock_category = pov.roadblock_category
         form.populate_obj(pov)
+        pov.quarter_started = get_quarter(pov.start_date)
         if form.roadblock_category.data and not old_roadblock_category:
             pov.roadblock_created_date = datetime.utcnow().date()
             pov.roadblock_resolved_date = None
@@ -222,6 +235,76 @@ def analytics():
     return render_template('analytics.html', metrics=metrics,
                            status_chart_data=[{'label': status, 'value': count} for status, count in status_counts],
                            stage_chart_data=[{'label': stage, 'value': count} for stage, count in stage_counts_active])
+
+@app.route('/analytics/roadblocks')
+def roadblock_analytics():
+    # Roadblock analytics using the POV model's roadblock fields
+    # 1. Data for "Roadblocks by Category & Severity" Chart
+    category_severity_data = db.session.query(
+        POV.roadblock_category,
+        POV.roadblock_severity,
+        func.count(POV.id)
+    ).filter(
+        POV.roadblock_category.isnot(None),
+        POV.roadblock_category != ''
+    ).group_by(POV.roadblock_category, POV.roadblock_severity).all()
+
+    # Structure data for Chart.js (category as labels, severity as datasets)
+    chart_data_category = {}
+    for category, severity, count in category_severity_data:
+        if category not in chart_data_category:
+            chart_data_category[category] = {'Low': 0, 'Medium': 0, 'High': 0}
+        if severity:
+            chart_data_category[category][severity] = count
+
+    # 2. Data for "Ownership Breakdown" Chart
+    ownership_data = db.session.query(
+        POV.roadblock_owner,
+        func.count(POV.id)
+    ).filter(
+        POV.roadblock_owner.isnot(None),
+        POV.roadblock_owner != ''
+    ).group_by(POV.roadblock_owner).all()
+    chart_data_ownership = dict(ownership_data)
+
+    # 3. Data for "Stagnation Analysis" Table
+    stagnant_roadblocks = db.session.query(
+        POV.deal_name,
+        POV.roadblock_category,
+        POV.roadblock_severity,
+        POV.roadblock_owner,
+        POV.roadblock_created_date,
+        (func.julianday(func.current_date()) - func.julianday(POV.roadblock_created_date)).label('days_stagnant')
+    ).filter(
+        POV.roadblock_category.isnot(None),
+        POV.roadblock_category != '',
+        POV.roadblock_created_date.isnot(None),
+        POV.deleted == False,
+        POV.status.in_(['Active', 'In Trial', 'Pending Sales', 'On Hold'])
+    ).order_by(
+        func.julianday(func.current_date()) - func.julianday(POV.roadblock_created_date).desc()
+    ).all()
+
+    # 4. Data for Metric Cards
+    active_roadblocks_count = db.session.query(POV).filter(
+        POV.roadblock_category.isnot(None),
+        POV.roadblock_category != '',
+        POV.deleted == False,
+        POV.status.in_(['Active', 'In Trial', 'Pending Sales', 'On Hold'])
+    ).count()
+
+    # Average days stagnant
+    stagnant_days = [row.days_stagnant for row in stagnant_roadblocks if row.days_stagnant is not None]
+    avg_days_stagnant = round(sum(stagnant_days) / len(stagnant_days), 1) if stagnant_days else 0
+
+    return render_template(
+        'roadblock_analytics.html',
+        active_roadblocks_count=active_roadblocks_count,
+        avg_days_stagnant=avg_days_stagnant,
+        stagnant_roadblocks=stagnant_roadblocks,
+        chart_data_category=chart_data_category,
+        chart_data_ownership=chart_data_ownership
+    )
 
 @app.route('/pov/<int:pov_id>/delete', methods=['POST'])
 def delete_pov(pov_id):
@@ -294,6 +377,67 @@ def bulk_action():
         flash(f'An error occurred: {e}', 'danger')
     return redirect(url_for('dashboard'))
 
+@app.route('/details/<string:metric>')
+def details(metric):
+    """
+    Shows a filtered list of POVs based on the metric clicked
+    on the analytics dashboard.
+    """
+    today = datetime.utcnow().date()
+    title = "Detail View"
+    pov_list = []
+
+    if metric == 'ending_soon':
+        title = "POVs Ending in Next 2 Weeks"
+        two_weeks_from_now = today + timedelta(days=14)
+        pov_list = POV.query.filter(
+            POV.status.in_(['Active', 'In Trial']),
+            POV.projected_end_date <= two_weeks_from_now,
+            POV.projected_end_date >= today
+        ).all()
+
+    elif metric == 'overdue' or metric == 'past_due':
+        title = "POVs Past End Date"
+        pov_list = POV.query.filter(
+            # This list now matches the dashboard's logic
+            POV.status.in_(['In Trial', 'Pending Sales', 'Active', 'On Hold']),
+            POV.projected_end_date < today,
+            POV.projected_end_date.isnot(None)
+        ).all()
+
+    elif metric == 'active':
+        title = "All Active POVs"
+        pov_list = POV.query.filter(POV.status.in_(['Active', 'In Trial'])).all()
+        
+    elif metric == 'technical_wins':
+        title = "Completed Technical Wins"
+        pov_list = POV.query.filter(POV.technical_win == True).all()
+
+    elif metric == 'closed_won':
+        title = "Closed Won POVs"
+        pov_list = POV.query.filter(POV.status == 'Closed Won').all()
+        
+    # ... add an 'elif' for every metric tile you create ...
+
+    return render_template('details.html', title=title, povs=pov_list)
+
+@app.cli.command("backfill-quarters")
+def backfill_quarters_command():
+    """One-time command to calculate and save the quarter for existing POVs."""
+    povs_to_update = POV.query.filter(POV.quarter_started.is_(None)).all()
+    if not povs_to_update:
+        print("All POVs already have their quarter calculated. Nothing to do.")
+        return
+
+    print(f"Found {len(povs_to_update)} POVs to update...")
+    updated_count = 0
+    for pov in povs_to_update:
+        if pov.start_date:
+            pov.quarter_started = get_quarter(pov.start_date)
+            updated_count += 1
+    
+    db.session.commit()
+    print(f"Successfully updated {updated_count} POVs with their start quarter.")
 
 if __name__ == '__main__':
     with app.app_context():
